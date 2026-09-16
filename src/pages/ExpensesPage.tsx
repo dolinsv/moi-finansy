@@ -1,0 +1,220 @@
+import { useMemo, useState } from 'react'
+import { FundTypeFields } from '../components/FundTypeFields'
+import { Modal } from '../components/Modal'
+import { PageHeader } from '../components/PageHeader'
+import { RowActions } from '../components/RowActions'
+import { useFinance } from '../FinanceContext'
+import type { Expense, FundType } from '../types'
+import { formatDate, formatMoney, fundTypeLabel, todayIso } from '../utils'
+
+const emptyForm = () => ({
+  date: todayIso(),
+  memberId: '',
+  expenseTypeId: '',
+  fundType: 'cash' as FundType,
+  cardId: '',
+  amount: '',
+  comment: '',
+})
+
+export function ExpensesPage() {
+  const { data, addExpense, updateExpense, removeExpense } = useFinance()
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState<Expense | null>(null)
+  const [form, setForm] = useState(emptyForm)
+
+  const memberMap = useMemo(
+    () => Object.fromEntries(data.members.map((m) => [m.id, m.name])),
+    [data.members],
+  )
+  const typeMap = useMemo(
+    () => Object.fromEntries(data.expenseTypes.map((t) => [t.id, t.name])),
+    [data.expenseTypes],
+  )
+  const cardMap = useMemo(
+    () =>
+      Object.fromEntries(
+        data.cards.map((c) => [c.id, `${c.name} •••• ${c.last4}`]),
+      ),
+    [data.cards],
+  )
+
+  const openCreate = () => {
+    setEditing(null)
+    setForm({
+      ...emptyForm(),
+      memberId: data.members[0]?.id ?? '',
+      expenseTypeId: data.expenseTypes[0]?.id ?? '',
+    })
+    setOpen(true)
+  }
+
+  const openEdit = (item: Expense) => {
+    setEditing(item)
+    setForm({
+      date: item.date,
+      memberId: item.memberId,
+      expenseTypeId: item.expenseTypeId,
+      fundType: item.fundType,
+      cardId: item.cardId ?? '',
+      amount: String(item.amount),
+      comment: item.comment ?? '',
+    })
+    setOpen(true)
+  }
+
+  const save = () => {
+    const amount = Number(form.amount)
+    if (!amount || amount <= 0) return
+    if (form.fundType === 'card' && !form.cardId) return
+
+    const payload = {
+      date: form.date,
+      memberId: form.memberId,
+      expenseTypeId: form.expenseTypeId,
+      fundType: form.fundType,
+      cardId: form.fundType === 'card' ? form.cardId : undefined,
+      amount,
+      comment: form.comment.trim() || undefined,
+    }
+
+    if (editing) updateExpense({ ...payload, id: editing.id })
+    else addExpense(payload)
+    setOpen(false)
+  }
+
+  return (
+    <div className="page fade-in">
+      <PageHeader
+        title="Расходы"
+        subtitle="Ввод трат семьи"
+        action={
+          <button type="button" className="btn primary" onClick={openCreate}>
+            Новый расход
+          </button>
+        }
+      />
+
+      <div className="table-wrap">
+        <table className="responsive-table">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Член семьи</th>
+              <th>Вид расхода</th>
+              <th>Средства</th>
+              <th>Сумма</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {data.expenses.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="empty">
+                  Пока нет расходов. Создайте первый документ.
+                </td>
+              </tr>
+            ) : (
+              data.expenses.map((item) => (
+                <tr key={item.id}>
+                  <td data-label="Дата">{formatDate(item.date)}</td>
+                  <td data-label="Член семьи">{memberMap[item.memberId] ?? '—'}</td>
+                  <td data-label="Вид расхода">{typeMap[item.expenseTypeId] ?? '—'}</td>
+                  <td data-label="Средства">
+                    {fundTypeLabel(item.fundType)}
+                    {item.fundType === 'card' && item.cardId
+                      ? ` · ${cardMap[item.cardId] ?? ''}`
+                      : ''}
+                  </td>
+                  <td data-label="Сумма" className="money down">
+                    {formatMoney(item.amount)}
+                  </td>
+                  <td className="actions-cell">
+                    <RowActions
+                      onEdit={() => openEdit(item)}
+                      onDelete={() => removeExpense(item.id)}
+                    />
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <Modal
+        title={editing ? 'Редактировать расход' : 'Новый расход'}
+        open={open}
+        onClose={() => setOpen(false)}
+        onSubmit={save}
+      >
+        <label className="field">
+          <span>Дата</span>
+          <input
+            type="date"
+            value={form.date}
+            onChange={(e) => setForm({ ...form, date: e.target.value })}
+            required
+          />
+        </label>
+        <label className="field">
+          <span>Член семьи</span>
+          <select
+            value={form.memberId}
+            onChange={(e) => setForm({ ...form, memberId: e.target.value })}
+            required
+          >
+            {data.members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span>Вид расхода</span>
+          <select
+            value={form.expenseTypeId}
+            onChange={(e) => setForm({ ...form, expenseTypeId: e.target.value })}
+            required
+          >
+            {data.expenseTypes.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <FundTypeFields
+          fundType={form.fundType}
+          cardId={form.cardId}
+          cards={data.cards}
+          onFundTypeChange={(fundType) =>
+            setForm({ ...form, fundType, cardId: fundType === 'card' ? form.cardId : '' })
+          }
+          onCardChange={(cardId) => setForm({ ...form, cardId })}
+        />
+        <label className="field">
+          <span>Сумма, ₽</span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            value={form.amount}
+            onChange={(e) => setForm({ ...form, amount: e.target.value })}
+            required
+          />
+        </label>
+        <label className="field">
+          <span>Комментарий</span>
+          <input
+            type="text"
+            value={form.comment}
+            onChange={(e) => setForm({ ...form, comment: e.target.value })}
+            placeholder="Необязательно"
+          />
+        </label>
+      </Modal>
+    </div>
+  )
+}
