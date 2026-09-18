@@ -3,14 +3,14 @@ import { APP_NAME, BrandMark } from './BrandMark'
 import { useFinance } from '../FinanceContext'
 
 export function RequireAuth() {
-  const { currentUser, authReady, isVkMiniApp } = useFinance()
+  const { currentUser, authReady } = useFinance()
 
   if (!authReady) {
     return (
       <div className="boot-screen">
         <div className="boot-card">
           <BrandMark />
-          <p>{isVkMiniApp ? `Открываем ${APP_NAME}…` : 'Загрузка…'}</p>
+          <p>Загрузка {APP_NAME}…</p>
         </div>
       </div>
     )

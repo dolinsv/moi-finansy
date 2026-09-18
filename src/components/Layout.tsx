@@ -38,7 +38,7 @@ const bottomLinks = [
 ]
 
 export function Layout() {
-  const { currentUser, logout, isVkMiniApp, vkUser, cloud } = useFinance()
+  const { currentUser, logout, cloud } = useFinance()
   const { theme, toggleTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
@@ -72,11 +72,7 @@ export function Layout() {
   }
 
   const userLabel = currentUser?.name ?? 'Пользователь'
-  const userSub = isVkMiniApp
-    ? vkUser
-      ? `VK ID ${vkUser.id}`
-      : 'ВКонтакте'
-    : `@${currentUser?.login}`
+  const userSub = currentUser?.login ? `@${currentUser.login}` : ''
 
   return (
     <div className={`app-shell ${menuOpen ? 'menu-open' : ''}`}>
@@ -106,17 +102,15 @@ export function Layout() {
           >
             {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
           </button>
-          {!isVkMiniApp ? (
-            <button
-              type="button"
-              className="icon-btn"
-              onClick={onLogout}
-              aria-label="Выйти"
-              title="Выйти"
-            >
-              <LogoutIcon />
-            </button>
-          ) : null}
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={onLogout}
+            aria-label="Выйти"
+            title="Выйти"
+          >
+            <LogoutIcon />
+          </button>
         </div>
       </header>
 
@@ -156,7 +150,7 @@ export function Layout() {
         <div className="sidebar-footer">
           <div className="user-box">
             <strong>{userLabel}</strong>
-            <span>{userSub}</span>
+            {userSub ? <span>{userSub}</span> : null}
             <span className="cloud-pill" title={cloud.label}>
               {cloud.configured ? '☁ Облако' : 'Локально'}
             </span>
@@ -171,17 +165,15 @@ export function Layout() {
             >
               {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
             </button>
-            {!isVkMiniApp ? (
-              <button
-                type="button"
-                className="icon-btn"
-                onClick={onLogout}
-                aria-label="Выйти"
-                title="Выйти"
-              >
-                <LogoutIcon />
-              </button>
-            ) : null}
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={onLogout}
+              aria-label="Выйти"
+              title="Выйти"
+            >
+              <LogoutIcon />
+            </button>
           </div>
         </div>
       </aside>

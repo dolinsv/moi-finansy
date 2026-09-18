@@ -11,7 +11,6 @@ export interface FamilyMember {
   phone: string
   login: string
   password: string
-  vkId?: number
 }
 
 export interface IncomeType {

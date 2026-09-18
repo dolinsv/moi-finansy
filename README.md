@@ -1,31 +1,27 @@
-# МоиФинансы
+# Мои финансы
 
-Семейный учёт финансов. Работает как обычный сайт и как **VK Mini App**.
+Семейный учёт доходов, расходов, кредитов и вкладов.
 
-## Локальный запуск
+- Сайт: Cloudflare Workers  
+- Общие данные: Supabase  
+
+## Локально
 
 ```bash
 npm install
+cp .env.example .env   # подставьте URL и anon key Supabase
 npm run dev
 ```
 
-Откройте адрес Vite (по умолчанию http://127.0.0.1:5175).
+Откройте http://localhost:5175/
 
-## VK Mini App
+## Облако (Supabase)
 
-Пошаговая инструкция: см. файл [VK_SETUP.md](./VK_SETUP.md).
+1. Создайте проект на https://supabase.com  
+2. В SQL Editor выполните `supabase/schema.sql`  
+3. Включите realtime для таблицы `app_state`  
+4. Ключи: `.env` / `.env.production` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
 
-Кратко:
-1. Создайте Mini App на [dev.vk.com](https://dev.vk.com) и скопируйте `app_id`
-2. `npm run dev` (порт 5175)
-3. В другом терминале: `npm run tunnel` (или Cloudflare Tunnel)
-4. Вставьте HTTPS URL туннеля в «URL для разработки»
-5. Откройте `https://vk.com/appВАШ_ID`
+## Деплой
 
-## Возможности
-
-- Приходы и расходы
-- Справочники (семья, виды, карты)
-- Кредиты и вклады
-- Отчёты за период
-- Светлая / тёмная тема
+Push в GitHub → Cloudflare сам собирает и публикует.

@@ -13,7 +13,7 @@ import {
 } from '../utils'
 
 export function HomePage() {
-  const { data, currentUser, vkUser } = useFinance()
+  const { data, currentUser } = useFinance()
   const from = monthStartIso()
   const to = todayIso()
   const now = new Date()
@@ -36,12 +36,7 @@ export function HomePage() {
   const hour = now.getHours()
   const hello =
     hour < 12 ? 'Доброе утро' : hour < 18 ? 'Добрый день' : 'Добрый вечер'
-  const greetName =
-    currentUser?.vkId && vkUser?.first_name
-      ? vkUser.first_name
-      : currentUser?.name
-        ? firstNameFromFio(currentUser.name)
-        : ''
+  const greetName = currentUser?.name ? firstNameFromFio(currentUser.name) : ''
 
   return (
     <div className="page home-page fade-in">

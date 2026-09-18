@@ -162,7 +162,6 @@ function normalize(raw: Partial<AppData>): AppData {
       phone: member.phone || '',
       login: fallbackLogin,
       password: member.password || '1234',
-      vkId: member.vkId,
     }
   })
   const fallbackMemberId = members[0]?.id ?? ''

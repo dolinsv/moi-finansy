@@ -26,15 +26,6 @@ import type {
   Income,
   IncomeType,
 } from './types'
-import {
-  applyVkInsets,
-  getVkAppearance,
-  getVkUser,
-  initVkBridge,
-  isVkEnvironment,
-  subscribeVkConfig,
-  type VkUser,
-} from './vk'
 
 type CloudStatus = {
   configured: boolean
@@ -46,8 +37,6 @@ interface FinanceContextValue {
   data: AppData
   currentUser: FamilyMember | null
   authReady: boolean
-  isVkMiniApp: boolean
-  vkUser: VkUser | null
   cloud: CloudStatus
   login: (loginName: string, password: string) => string | null
   logout: () => void
@@ -84,13 +73,6 @@ function withId<T extends object>(item: T): T & { id: string } {
   return { ...item, id: crypto.randomUUID() }
 }
 
-function vkDisplayName(user: VkUser) {
-  return (
-    [user.first_name, user.last_name].filter(Boolean).join(' ').trim() ||
-    'Пользователь ВК'
-  )
-}
-
 function getLocalUpdatedAt() {
   return Number(localStorage.getItem(UPDATED_KEY) || '0')
 }
@@ -99,21 +81,10 @@ function setLocalUpdatedAt(ts: number) {
   localStorage.setItem(UPDATED_KEY, String(ts))
 }
 
-export function FinanceProvider({
-  children,
-  onVkTheme,
-}: {
-  children: ReactNode
-  onVkTheme?: (theme: 'light' | 'dark') => void
-}) {
-  const isVkMiniApp = useMemo(() => isVkEnvironment(), [])
+export function FinanceProvider({ children }: { children: ReactNode }) {
   const configured = isSupabaseConfigured()
   const [data, setData] = useState<AppData>(() => loadData())
-  const [sessionId, setSessionId] = useState<string | null>(() =>
-    isVkMiniApp ? null : loadSession(),
-  )
-  const [vkUser, setVkUser] = useState<VkUser | null>(null)
-  const [authReady, setAuthReady] = useState(!isVkMiniApp)
+  const [sessionId, setSessionId] = useState<string | null>(() => loadSession())
   const [cloudReady, setCloudReady] = useState(!configured)
   const [cloudLabel, setCloudLabel] = useState(
     configured ? 'Подключение к облаку…' : 'Локальный режим (облако не настроено)',
@@ -128,39 +99,45 @@ export function FinanceProvider({
     dataRef.current = data
   }, [data])
 
-  const applyData = useCallback((next: AppData, updatedAt: number, fromRemote = false) => {
-    if (fromRemote) applyingRemote.current = true
-    updatedAtRef.current = updatedAt
-    setLocalUpdatedAt(updatedAt)
-    saveData(next)
-    setData(next)
-    if (fromRemote) {
-      window.setTimeout(() => {
-        applyingRemote.current = false
-      }, 30)
-    }
-  }, [])
-
-  const scheduleRemoteSave = useCallback((next: AppData) => {
-    if (!configured || applyingRemote.current) return
-
-    const updatedAt = Date.now()
-    updatedAtRef.current = updatedAt
-    setLocalUpdatedAt(updatedAt)
-    setCloudLabel('Сохранение…')
-
-    if (pushTimer.current) window.clearTimeout(pushTimer.current)
-    pushTimer.current = window.setTimeout(async () => {
-      try {
-        await saveRemoteState(next, updatedAt)
-        setCloudLabel('Облако синхронизировано')
-      } catch (e) {
-        setCloudLabel(
-          e instanceof Error ? `Ошибка облака: ${e.message}` : 'Ошибка облака',
-        )
+  const applyData = useCallback(
+    (next: AppData, updatedAt: number, fromRemote = false) => {
+      if (fromRemote) applyingRemote.current = true
+      updatedAtRef.current = updatedAt
+      setLocalUpdatedAt(updatedAt)
+      saveData(next)
+      setData(next)
+      if (fromRemote) {
+        window.setTimeout(() => {
+          applyingRemote.current = false
+        }, 30)
       }
-    }, 500)
-  }, [configured])
+    },
+    [],
+  )
+
+  const scheduleRemoteSave = useCallback(
+    (next: AppData) => {
+      if (!configured || applyingRemote.current) return
+
+      const updatedAt = Date.now()
+      updatedAtRef.current = updatedAt
+      setLocalUpdatedAt(updatedAt)
+      setCloudLabel('Сохранение…')
+
+      if (pushTimer.current) window.clearTimeout(pushTimer.current)
+      pushTimer.current = window.setTimeout(async () => {
+        try {
+          await saveRemoteState(next, updatedAt)
+          setCloudLabel('Облако синхронизировано')
+        } catch (e) {
+          setCloudLabel(
+            e instanceof Error ? `Ошибка облака: ${e.message}` : 'Ошибка облака',
+          )
+        }
+      }, 500)
+    },
+    [configured],
+  )
 
   const commit = useCallback(
     (updater: (prev: AppData) => AppData) => {
@@ -237,7 +214,6 @@ export function FinanceProvider({
         return
       }
       void pullFromCloud('resume')
-      // PWA на iOS часто рвёт realtime — переподписка при возврате
       unsubscribe()
       unsubscribe = subscribeRemoteState((payload, updatedAt) => {
         if (updatedAt <= updatedAtRef.current) return
@@ -271,68 +247,6 @@ export function FinanceProvider({
     [data.members, sessionId],
   )
 
-  const loginWithVkUser = useCallback((user: VkUser) => {
-    const name = vkDisplayName(user)
-    setData((prev) => {
-      let member = prev.members.find((m) => m.vkId === user.id)
-      let nextMembers = prev.members
-
-      if (!member) {
-        member = {
-          id: crypto.randomUUID(),
-          name,
-          birthDate: '',
-          phone: '',
-          login: `vk_${user.id}`,
-          password: crypto.randomUUID(),
-          vkId: user.id,
-        }
-        nextMembers = [...prev.members, member]
-      } else if (member.name !== name) {
-        member = { ...member, name }
-        nextMembers = prev.members.map((m) =>
-          m.id === member!.id ? member! : m,
-        )
-      }
-
-      const next = { ...prev, members: nextMembers }
-      saveData(next)
-      scheduleRemoteSave(next)
-      setSessionId(member.id)
-      saveSession(member.id)
-      return next
-    })
-    setVkUser(user)
-  }, [scheduleRemoteSave])
-
-  useEffect(() => {
-    if (!isVkMiniApp) return
-
-    let cancelled = false
-    ;(async () => {
-      await initVkBridge()
-      const appearance = await getVkAppearance()
-      if (!cancelled && appearance) onVkTheme?.(appearance)
-
-      const user = await getVkUser()
-      if (cancelled) return
-      if (user) loginWithVkUser(user)
-      setAuthReady(true)
-    })()
-
-    const unsubscribe = subscribeVkConfig((payload) => {
-      if (payload.appearance === 'light' || payload.appearance === 'dark') {
-        onVkTheme?.(payload.appearance)
-      }
-      if (payload.insets) applyVkInsets(payload.insets)
-    })
-
-    return () => {
-      cancelled = true
-      unsubscribe()
-    }
-  }, [isVkMiniApp, loginWithVkUser, onVkTheme])
-
   const login = useCallback(
     (loginName: string, password: string) => {
       const normalized = loginName.trim().toLowerCase()
@@ -348,10 +262,9 @@ export function FinanceProvider({
   )
 
   const logout = useCallback(() => {
-    if (isVkMiniApp) return
     setSessionId(null)
     saveSession(null)
-  }, [isVkMiniApp])
+  }, [])
 
   const cloud = useMemo<CloudStatus>(
     () => ({
@@ -366,9 +279,7 @@ export function FinanceProvider({
     () => ({
       data,
       currentUser,
-      authReady: authReady && cloudReady,
-      isVkMiniApp,
-      vkUser,
+      authReady: cloudReady,
       cloud,
       login,
       logout,
@@ -503,17 +414,14 @@ export function FinanceProvider({
         })),
     }),
     [
-      authReady,
       cloud,
       cloudReady,
       commit,
       currentUser,
       data,
-      isVkMiniApp,
       login,
       logout,
       sessionId,
-      vkUser,
     ],
   )
 

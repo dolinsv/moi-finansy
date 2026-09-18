@@ -6,7 +6,7 @@ import { useFinance } from '../FinanceContext'
 import { useTheme } from '../theme'
 
 export function LoginPage() {
-  const { currentUser, login, authReady, isVkMiniApp, cloud } = useFinance()
+  const { currentUser, login, authReady, cloud } = useFinance()
   const { theme, toggleTheme } = useTheme()
   const [loginName, setLoginName] = useState('')
   const [password, setPassword] = useState('')
@@ -24,17 +24,6 @@ export function LoginPage() {
   }
 
   if (currentUser) return <Navigate to="/" replace />
-
-  if (isVkMiniApp) {
-    return (
-      <div className="boot-screen">
-        <div className="boot-card">
-          <BrandMark />
-          <p>Не удалось войти через ВКонтакте. Закройте мини-приложение и откройте снова.</p>
-        </div>
-      </div>
-    )
-  }
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()

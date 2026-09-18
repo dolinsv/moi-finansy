@@ -9,37 +9,29 @@ import { HomePage } from './pages/HomePage'
 import { IncomesPage } from './pages/IncomesPage'
 import { LoginPage } from './pages/LoginPage'
 import { ReportsPage } from './pages/ReportsPage'
-import { ThemeProvider, useTheme } from './theme'
-
-function AppRoutes() {
-  const { setTheme } = useTheme()
-
-  return (
-    <FinanceProvider onVkTheme={setTheme}>
-      <HashRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route element={<RequireAuth />}>
-            <Route element={<Layout />}>
-              <Route index element={<HomePage />} />
-              <Route path="incomes" element={<IncomesPage />} />
-              <Route path="expenses" element={<ExpensesPage />} />
-              <Route path="directories" element={<DirectoriesPage />} />
-              <Route path="credits" element={<CreditsPage />} />
-              <Route path="reports" element={<ReportsPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-          </Route>
-        </Routes>
-      </HashRouter>
-    </FinanceProvider>
-  )
-}
+import { ThemeProvider } from './theme'
 
 export default function App() {
   return (
     <ThemeProvider>
-      <AppRoutes />
+      <FinanceProvider>
+        <HashRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route element={<RequireAuth />}>
+              <Route element={<Layout />}>
+                <Route index element={<HomePage />} />
+                <Route path="incomes" element={<IncomesPage />} />
+                <Route path="expenses" element={<ExpensesPage />} />
+                <Route path="directories" element={<DirectoriesPage />} />
+                <Route path="credits" element={<CreditsPage />} />
+                <Route path="reports" element={<ReportsPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
+            </Route>
+          </Routes>
+        </HashRouter>
+      </FinanceProvider>
     </ThemeProvider>
   )
 }
