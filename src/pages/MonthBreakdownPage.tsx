@@ -9,7 +9,6 @@ import {
   monthBounds,
   monthLabel,
   parseMonthKey,
-  sumBy,
 } from '../utils'
 
 type Kind = 'income' | 'expense'
@@ -34,7 +33,7 @@ export function MonthBreakdownPage() {
       .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
   }, [bounds, data.expenses, data.incomes, mode])
 
-  const total = sumBy(rows, (item) => item.amount)
+  const total = rows.reduce((sum, item) => sum + item.amount, 0)
 
   const memberMap = useMemo(
     () => Object.fromEntries(data.members.map((m) => [m.id, m.name])),
