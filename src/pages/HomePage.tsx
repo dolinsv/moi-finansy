@@ -96,34 +96,34 @@ export function HomePage() {
         </div>
       </section>
 
-      <div className="summary-row">
-        <article className="summary-chip">
-          <span className="summary-icon up">
-            <IncomeIcon size={18} />
-          </span>
-          <div>
-            <span>Доходы</span>
-            <strong className="up">{formatMoney(incomeSum)}</strong>
+      <div className="summary-panel">
+        <Link to="/incomes" className="summary-item tone-up">
+          <div className="summary-item-top">
+            <span className="summary-icon up">
+              <IncomeIcon size={16} />
+            </span>
+            <span className="summary-item-label">Доходы</span>
           </div>
-        </article>
-        <article className="summary-chip">
-          <span className="summary-icon down">
-            <ExpenseIcon size={18} />
-          </span>
-          <div>
-            <span>Расходы</span>
-            <strong className="down">{formatMoney(expenseSum)}</strong>
+          <strong className="up">{formatMoney(incomeSum)}</strong>
+        </Link>
+        <Link to="/expenses" className="summary-item tone-down">
+          <div className="summary-item-top">
+            <span className="summary-icon down">
+              <ExpenseIcon size={16} />
+            </span>
+            <span className="summary-item-label">Расходы</span>
           </div>
-        </article>
-        <article className="summary-chip">
-          <span className="summary-icon soft">
-            <CreditIcon size={18} />
-          </span>
-          <div>
-            <span>Вклады</span>
-            <strong>{formatMoney(depositsSum)}</strong>
+          <strong className="down">{formatMoney(expenseSum)}</strong>
+        </Link>
+        <Link to="/credits" className="summary-item tone-soft">
+          <div className="summary-item-top">
+            <span className="summary-icon soft">
+              <CreditIcon size={16} />
+            </span>
+            <span className="summary-item-label">Вклады</span>
           </div>
-        </article>
+          <strong>{formatMoney(depositsSum)}</strong>
+        </Link>
       </div>
 
       <section className="greet-card">
