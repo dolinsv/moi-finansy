@@ -152,10 +152,6 @@ export function HomePage() {
           <span className="menu-chevron">›</span>
         </Link>
       </section>
-
-      <Link className="fab" to="/incomes" aria-label="Новый приход">
-        +
-      </Link>
     </div>
   )
 }

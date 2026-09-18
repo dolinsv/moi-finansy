@@ -178,24 +178,37 @@ export function FinanceProvider({
     if (!configured) return
 
     let cancelled = false
-    ;(async () => {
+    let unsubscribe = () => {}
+
+    const pullFromCloud = async (reason: string) => {
       try {
         const remote = await loadRemoteState()
         if (cancelled) return
 
         if (!remote) {
-          const local = dataRef.current
           const updatedAt = Date.now()
-          await saveRemoteState(local, updatedAt)
+          await saveRemoteState(dataRef.current, updatedAt)
           updatedAtRef.current = updatedAt
           setLocalUpdatedAt(updatedAt)
           setCloudLabel('Данные выгружены в облако')
-        } else if (remote.updatedAt >= updatedAtRef.current) {
+          return
+        }
+
+        if (remote.updatedAt > updatedAtRef.current) {
           applyData(remote.data, remote.updatedAt, true)
-          setCloudLabel('Данные загружены из облака')
-        } else {
-          await saveRemoteState(dataRef.current, updatedAtRef.current || Date.now())
+          setCloudLabel(
+            reason === 'live'
+              ? 'Обновлено с другого устройства'
+              : 'Данные загружены из облака',
+          )
+        } else if (remote.updatedAt < updatedAtRef.current) {
+          await saveRemoteState(
+            dataRef.current,
+            updatedAtRef.current || Date.now(),
+          )
           setCloudLabel('Локальные данные отправлены в облако')
+        } else {
+          setCloudLabel('Облако синхронизировано')
         }
       } catch (e) {
         if (!cancelled) {
@@ -205,20 +218,50 @@ export function FinanceProvider({
               : 'Облако недоступно',
           )
         }
-      } finally {
-        if (!cancelled) setCloudReady(true)
       }
+    }
+
+    ;(async () => {
+      await pullFromCloud('start')
+      if (!cancelled) setCloudReady(true)
     })()
 
-    const unsubscribe = subscribeRemoteState((payload, updatedAt) => {
+    unsubscribe = subscribeRemoteState((payload, updatedAt) => {
       if (updatedAt <= updatedAtRef.current) return
       applyData(payload, updatedAt, true)
       setCloudLabel('Обновлено с другого устройства')
     })
 
+    const onResume = () => {
+      if (document.visibilityState && document.visibilityState !== 'visible') {
+        return
+      }
+      void pullFromCloud('resume')
+      // PWA на iOS часто рвёт realtime — переподписка при возврате
+      unsubscribe()
+      unsubscribe = subscribeRemoteState((payload, updatedAt) => {
+        if (updatedAt <= updatedAtRef.current) return
+        applyData(payload, updatedAt, true)
+        setCloudLabel('Обновлено с другого устройства')
+      })
+    }
+
+    const poll = window.setInterval(() => {
+      if (document.visibilityState === 'hidden') return
+      void pullFromCloud('poll')
+    }, 4000)
+
+    document.addEventListener('visibilitychange', onResume)
+    window.addEventListener('focus', onResume)
+    window.addEventListener('pageshow', onResume)
+
     return () => {
       cancelled = true
       unsubscribe()
+      window.clearInterval(poll)
+      document.removeEventListener('visibilitychange', onResume)
+      window.removeEventListener('focus', onResume)
+      window.removeEventListener('pageshow', onResume)
       if (pushTimer.current) window.clearTimeout(pushTimer.current)
     }
   }, [applyData, configured])
