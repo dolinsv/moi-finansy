@@ -10,7 +10,7 @@ import type {
   FamilyMember,
   IncomeType,
 } from '../types'
-import { formatDate, formatMoney } from '../utils'
+import { formatDate, formatMoney, formatPhoneInput } from '../utils'
 
 type Tab = 'members' | 'incomeTypes' | 'expenseTypes' | 'cards'
 
@@ -88,7 +88,7 @@ export function DirectoriesPage() {
       setMemberForm({
         name: m.name,
         birthDate: m.birthDate,
-        phone: m.phone,
+        phone: formatPhoneInput(m.phone),
         login: m.login,
         password: m.password,
       })
@@ -120,7 +120,7 @@ export function DirectoriesPage() {
       const payload = {
         name,
         birthDate: memberForm.birthDate,
-        phone: memberForm.phone.trim(),
+        phone: formatPhoneInput(memberForm.phone),
         login,
         password,
       }
@@ -185,6 +185,7 @@ export function DirectoriesPage() {
             key={t.id}
             type="button"
             className={tab === t.id ? 'seg active' : 'seg'}
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setTab(t.id)}
           >
             <span className="seg-full">{t.label}</span>
@@ -222,7 +223,9 @@ export function DirectoriesPage() {
                     <td data-label="Дата рождения">
                       {item.birthDate ? formatDate(item.birthDate) : '—'}
                     </td>
-                    <td data-label="Телефон">{item.phone || '—'}</td>
+                    <td data-label="Телефон">
+                      {item.phone ? formatPhoneInput(item.phone) : '—'}
+                    </td>
                     <td className="actions-cell">
                       <RowActions
                         onEdit={() => openEdit(item)}
@@ -341,11 +344,17 @@ export function DirectoriesPage() {
               <span>Телефон</span>
               <input
                 type="tel"
+                inputMode="tel"
+                autoComplete="tel"
                 value={memberForm.phone}
                 onChange={(e) =>
-                  setMemberForm({ ...memberForm, phone: e.target.value })
+                  setMemberForm({
+                    ...memberForm,
+                    phone: formatPhoneInput(e.target.value),
+                  })
                 }
-                placeholder="+7 ..."
+                placeholder="+7 900 123-45-67"
+                maxLength={18}
               />
             </label>
             <label className="field">

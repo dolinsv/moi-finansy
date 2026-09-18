@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom'
+import { APP_NAME, BrandMark } from './BrandMark'
 import { useFinance } from '../FinanceContext'
 
 export function RequireAuth() {
@@ -8,8 +9,8 @@ export function RequireAuth() {
     return (
       <div className="boot-screen">
         <div className="boot-card">
-          <span className="brand-mark">МФ</span>
-          <p>{isVkMiniApp ? 'Открываем МоиФинансы…' : 'Загрузка…'}</p>
+          <BrandMark />
+          <p>{isVkMiniApp ? `Открываем ${APP_NAME}…` : 'Загрузка…'}</p>
         </div>
       </div>
     )

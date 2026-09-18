@@ -90,4 +90,4 @@ export interface AppData {
   deposits: Deposit[]
 }
 
-export type ReportKind = 'income' | 'expense' | 'balance'
+export type ReportKind = 'income' | 'expense' | 'credits' | 'deposits'

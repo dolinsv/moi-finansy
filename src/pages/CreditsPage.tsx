@@ -140,6 +140,7 @@ export function CreditsPage() {
         <button
           type="button"
           className={section === 'credits' ? 'seg active' : 'seg'}
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => setSection('credits')}
         >
           Кредиты
@@ -147,6 +148,7 @@ export function CreditsPage() {
         <button
           type="button"
           className={section === 'deposits' ? 'seg active' : 'seg'}
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => setSection('deposits')}
         >
           Вклады

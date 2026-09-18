@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from 'react'
 import { Navigate } from 'react-router-dom'
+import { APP_NAME, BrandMark } from '../components/BrandMark'
 import { MoonIcon, SunIcon } from '../components/Icons'
 import { useFinance } from '../FinanceContext'
 import { useTheme } from '../theme'
@@ -15,7 +16,7 @@ export function LoginPage() {
     return (
       <div className="boot-screen">
         <div className="boot-card">
-          <span className="brand-mark">МФ</span>
+          <BrandMark />
           <p>Загрузка…</p>
         </div>
       </div>
@@ -28,7 +29,7 @@ export function LoginPage() {
     return (
       <div className="boot-screen">
         <div className="boot-card">
-          <span className="brand-mark">МФ</span>
+          <BrandMark />
           <p>Не удалось войти через ВКонтакте. Закройте мини-приложение и откройте снова.</p>
         </div>
       </div>
@@ -55,10 +56,9 @@ export function LoginPage() {
       </button>
       <form className="login-card" onSubmit={onSubmit}>
         <div className="login-brand">
-          <span className="brand-mark">МФ</span>
+          <BrandMark />
           <div>
-            <h1>МоиФинансы</h1>
-            <p>Вход для члена семьи</p>
+            <h1>{APP_NAME}</h1>
           </div>
         </div>
 

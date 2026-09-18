@@ -70,7 +70,10 @@ function withId<T extends object>(item: T): T & { id: string } {
 }
 
 function vkDisplayName(user: VkUser) {
-  return [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || 'Пользователь ВК'
+  return (
+    [user.first_name, user.last_name].filter(Boolean).join(' ').trim() ||
+    'Пользователь ВК'
+  )
 }
 
 export function FinanceProvider({
@@ -192,7 +195,10 @@ export function FinanceProvider({
       login,
       logout,
       addIncome: (item) =>
-        commit((prev) => ({ ...prev, incomes: [withId(item), ...prev.incomes] })),
+        commit((prev) => ({
+          ...prev,
+          incomes: [withId(item), ...prev.incomes],
+        })),
       updateIncome: (item) =>
         commit((prev) => ({
           ...prev,
@@ -246,7 +252,9 @@ export function FinanceProvider({
       updateIncomeType: (item) =>
         commit((prev) => ({
           ...prev,
-          incomeTypes: prev.incomeTypes.map((x) => (x.id === item.id ? item : x)),
+          incomeTypes: prev.incomeTypes.map((x) =>
+            x.id === item.id ? item : x,
+          ),
         })),
       removeIncomeType: (id) =>
         commit((prev) => ({

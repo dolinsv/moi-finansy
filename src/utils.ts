@@ -52,3 +52,37 @@ export function dayOfMonth(date = new Date()): number {
 export function sumBy<T>(items: T[], getAmount: (item: T) => number): number {
   return items.reduce((acc, item) => acc + getAmount(item), 0)
 }
+
+/** Имя для приветствия из ФИО («Фамилия Имя Отчество» → Имя). */
+export function firstNameFromFio(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return ''
+  if (parts.length === 1) return parts[0]
+  return parts[1]
+}
+
+/** Маска российского номера: +7 900 123-45-67 */
+export function formatPhoneInput(value: string): string {
+  const raw = value.trim()
+  if (!raw) return ''
+
+  let digits = raw.replace(/\D/g, '')
+  if (!digits) return raw.startsWith('+') ? '+' : ''
+
+  if (digits.startsWith('8')) digits = `7${digits.slice(1)}`
+  if (!digits.startsWith('7')) digits = `7${digits}`
+  digits = digits.slice(0, 11)
+
+  const code = digits.slice(1, 4)
+  const mid = digits.slice(4, 7)
+  const a = digits.slice(7, 9)
+  const b = digits.slice(9, 11)
+
+  let out = '+7'
+  if (code) out += ` ${code}`
+  if (mid) out += ` ${mid}`
+  if (a) out += `-${a}`
+  if (b) out += `-${b}`
+  return out
+}
+

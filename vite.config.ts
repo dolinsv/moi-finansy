@@ -1,8 +1,9 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// GitHub Pages: https://dolinsv.github.io/moi-finansy/
-const base = process.env.GITHUB_PAGES === '1' ? '/moi-finansy/' : './'
+// Cloudflare Pages / любой хостинг в корне: base = '/'
+// GitHub Pages в подпапке: GITHUB_PAGES=1 → /moi-finansy/
+const base = process.env.GITHUB_PAGES === '1' ? '/moi-finansy/' : '/'
 
 export default defineConfig({
   plugins: [react()],

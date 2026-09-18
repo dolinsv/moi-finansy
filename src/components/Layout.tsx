@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useFinance } from '../FinanceContext'
 import { useTheme } from '../theme'
+import { APP_NAME, BrandMark } from './BrandMark'
 import {
   CreditIcon,
   DirectoryIcon,
@@ -45,6 +46,7 @@ export function Layout() {
 
   useEffect(() => {
     setMenuOpen(false)
+    window.scrollTo(0, 0)
   }, [location.pathname])
 
   useEffect(() => {
@@ -91,8 +93,8 @@ export function Layout() {
           <span />
         </button>
         <div className="topbar-brand">
-          <span className="brand-mark sm">МФ</span>
-          <strong>МоиФинансы</strong>
+          <BrandMark size="sm" />
+          <strong>{APP_NAME}</strong>
         </div>
         <div className="topbar-actions">
           <button
@@ -128,9 +130,9 @@ export function Layout() {
 
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">МФ</span>
+          <BrandMark />
           <div>
-            <p className="brand-name">МоиФинансы</p>
+            <p className="brand-name">{APP_NAME}</p>
             <p className="brand-sub">семейный учёт</p>
           </div>
         </div>

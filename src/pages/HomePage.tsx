@@ -4,6 +4,7 @@ import { useFinance } from '../FinanceContext'
 import {
   dayOfMonth,
   daysInMonth,
+  firstNameFromFio,
   formatMoney,
   monthLabel,
   monthStartIso,
@@ -12,7 +13,7 @@ import {
 } from '../utils'
 
 export function HomePage() {
-  const { data, currentUser } = useFinance()
+  const { data, currentUser, vkUser } = useFinance()
   const from = monthStartIso()
   const to = todayIso()
   const now = new Date()
@@ -35,6 +36,12 @@ export function HomePage() {
   const hour = now.getHours()
   const hello =
     hour < 12 ? 'Доброе утро' : hour < 18 ? 'Добрый день' : 'Добрый вечер'
+  const greetName =
+    currentUser?.vkId && vkUser?.first_name
+      ? vkUser.first_name
+      : currentUser?.name
+        ? firstNameFromFio(currentUser.name)
+        : ''
 
   return (
     <div className="page home-page fade-in">
@@ -80,7 +87,7 @@ export function HomePage() {
         <div>
           <strong>
             {hello}
-            {currentUser?.name ? `, ${currentUser.name.split(' ')[0]}` : ''}!
+            {greetName ? `, ${greetName}` : ''}!
           </strong>
           <p>Откройте раздел, создайте документ или посмотрите отчёт.</p>
         </div>
