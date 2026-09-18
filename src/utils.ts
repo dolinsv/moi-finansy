@@ -24,18 +24,6 @@ export function parseMoney(raw: string | number): number {
   return Math.round(value * 100) / 100
 }
 
-export function formatDocNumber(n: number): string {
-  return String(Math.max(0, Math.floor(n))).padStart(5, '0')
-}
-
-export function nextDocNumber(items: { number?: number }[]): number {
-  let max = 0
-  for (const item of items) {
-    if (typeof item.number === 'number' && item.number > max) max = item.number
-  }
-  return max + 1
-}
-
 /** Formats amount for input: `51 910,47` */
 export function formatMoneyInput(raw: string): string {
   const normalized = raw.replace(/\u00a0/g, ' ').replace(/\./g, ',')

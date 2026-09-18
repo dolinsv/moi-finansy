@@ -71,16 +71,6 @@ export function createSeedData(): AppData {
     incomes: [
       {
         id: id(),
-        number: 1,
-        date: d(5),
-        memberId: members[1].id,
-        incomeTypeId: incomeTypes[0].id,
-        fundType: 'account',
-        amount: 95000,
-      },
-      {
-        id: id(),
-        number: 2,
         date: d(2),
         memberId: members[0].id,
         incomeTypeId: incomeTypes[0].id,
@@ -89,11 +79,26 @@ export function createSeedData(): AppData {
         amount: 120000,
         comment: 'Аванс',
       },
+      {
+        id: id(),
+        date: d(5),
+        memberId: members[1].id,
+        incomeTypeId: incomeTypes[0].id,
+        fundType: 'account',
+        amount: 95000,
+      },
     ],
     expenses: [
       {
         id: id(),
-        number: 1,
+        date: d(1),
+        memberId: members[0].id,
+        expenseTypeId: expenseTypes[0].id,
+        fundType: 'cash',
+        amount: 3200,
+      },
+      {
+        id: id(),
         date: d(3),
         memberId: members[1].id,
         expenseTypeId: expenseTypes[1].id,
@@ -101,15 +106,6 @@ export function createSeedData(): AppData {
         cardId: cards[1].id,
         amount: 45000,
         comment: 'Аренда',
-      },
-      {
-        id: id(),
-        number: 2,
-        date: d(1),
-        memberId: members[0].id,
-        expenseTypeId: expenseTypes[0].id,
-        fundType: 'cash',
-        amount: 3200,
       },
     ],
     credits: [
@@ -184,44 +180,19 @@ function normalize(raw: Partial<AppData>): AppData {
     }
   })
 
-  const incomes = assignDocNumbers(
-    (raw.incomes ?? seed.incomes) as Array<Income & { number?: number }>,
-  )
-  const expenses = assignDocNumbers(
-    (raw.expenses ?? seed.expenses) as Array<Expense & { number?: number }>,
-  )
+  const stripNumber = <T extends { number?: number }>(items: T[]) =>
+    items.map(({ number: _number, ...rest }) => rest as Omit<T, 'number'>)
 
   return {
     members,
     incomeTypes: raw.incomeTypes ?? seed.incomeTypes,
     expenseTypes: raw.expenseTypes ?? seed.expenseTypes,
     cards,
-    incomes,
-    expenses,
+    incomes: stripNumber((raw.incomes ?? seed.incomes) as Array<Income & { number?: number }>) as Income[],
+    expenses: stripNumber((raw.expenses ?? seed.expenses) as Array<Expense & { number?: number }>) as Expense[],
     credits: raw.credits ?? seed.credits,
     deposits: raw.deposits ?? seed.deposits,
   }
-}
-
-function assignDocNumbers<T extends { id: string; date: string; number?: number }>(
-  items: T[],
-): Array<T & { number: number }> {
-  const sorted = [...items].sort((a, b) => {
-    if (a.date !== b.date) return a.date.localeCompare(b.date)
-    return a.id.localeCompare(b.id)
-  })
-  const numbers = new Map<string, number>()
-  let next = 1
-  for (const item of sorted) {
-    if (typeof item.number === 'number' && item.number > 0) {
-      numbers.set(item.id, item.number)
-      if (item.number >= next) next = item.number + 1
-    }
-  }
-  for (const item of sorted) {
-    if (!numbers.has(item.id)) numbers.set(item.id, next++)
-  }
-  return items.map((item) => ({ ...item, number: numbers.get(item.id)! }))
 }
 
 export function loadData(): AppData {

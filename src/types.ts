@@ -34,7 +34,6 @@ export interface BankCard {
 
 export interface Income {
   id: string
-  number: number
   date: string
   memberId: string
   incomeTypeId: string
@@ -46,7 +45,6 @@ export interface Income {
 
 export interface Expense {
   id: string
-  number: number
   date: string
   memberId: string
   expenseTypeId: string

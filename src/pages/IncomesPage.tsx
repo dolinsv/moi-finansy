@@ -8,7 +8,6 @@ import { useFinance } from '../FinanceContext'
 import type { FundType, Income } from '../types'
 import {
   formatDate,
-  formatDocNumber,
   formatMoney,
   fundTypeLabel,
   parseMoney,
@@ -54,10 +53,7 @@ export function IncomesPage() {
     return [...data.incomes]
       .filter((item) => !typeFilter || item.incomeTypeId === typeFilter)
       .filter((item) => !memberFilter || item.memberId === memberFilter)
-      .sort((a, b) => {
-        if (a.date !== b.date) return b.date.localeCompare(a.date)
-        return b.number - a.number
-      })
+      .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
   }, [data.incomes, typeFilter, memberFilter])
 
   const total = useMemo(() => rows.reduce((sum, item) => sum + item.amount, 0), [rows])
@@ -115,7 +111,7 @@ export function IncomesPage() {
       comment: form.comment.trim() || undefined,
     }
 
-    if (editing) updateIncome({ ...payload, id: editing.id, number: editing.number })
+    if (editing) updateIncome({ ...payload, id: editing.id })
     else addIncome(payload)
     setOpen(false)
   }
@@ -168,7 +164,6 @@ export function IncomesPage() {
         <table className="responsive-table">
           <thead>
             <tr>
-              <th>Номер</th>
               <th>Дата</th>
               <th>Член семьи</th>
               <th>Вид дохода</th>
@@ -180,7 +175,7 @@ export function IncomesPage() {
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="empty">
+                <td colSpan={6} className="empty">
                   {data.incomes.length === 0
                     ? 'Пока нет приходов. Создайте первый документ.'
                     : 'Нет документов по выбранным фильтрам.'}
@@ -189,9 +184,6 @@ export function IncomesPage() {
             ) : (
               rows.map((item) => (
                 <tr key={item.id}>
-                  <td data-label="Номер" className="doc-number">
-                    {formatDocNumber(item.number)}
-                  </td>
                   <td data-label="Дата">{formatDate(item.date)}</td>
                   <td data-label="Член семьи">
                     {memberMap[item.memberId] ?? '—'}
