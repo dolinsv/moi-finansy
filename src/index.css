@@ -64,10 +64,18 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: clip;
+}
+
 html,
 body,
 #root {
   min-height: 100%;
+  width: 100%;
+  max-width: 100%;
 }
 
 body {
@@ -79,13 +87,18 @@ body {
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overflow-x: clip;
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
 }
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
   color: inherit;
+  touch-action: manipulation;
 }
 
 a {
@@ -98,6 +111,9 @@ a {
   grid-template-columns: 248px minmax(0, 1fr);
   min-height: 100vh;
   min-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 .topbar,
@@ -1034,7 +1050,7 @@ tbody tr:last-child td {
   padding: 10px 12px;
   background: var(--surface);
   color: var(--ink);
-  font-size: var(--text-base);
+  font-size: 16px;
   min-height: 42px;
 }
 
@@ -1230,8 +1246,20 @@ tbody tr:last-child td {
     padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
+  /* iOS zoomed the page when inputs were < 16px; keep form text readable without scale */
+  input,
+  select,
+  textarea,
+  .field input,
+  .field select {
+    font-size: 16px;
+  }
+
   .main {
     padding: 12px 12px 20px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   .page-header {
