@@ -985,6 +985,46 @@ td.money-col {
   font-weight: 700;
 }
 
+.sort-th {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+.sort-th:hover {
+  color: var(--accent-strong);
+}
+
+.sort-th.active {
+  color: var(--accent-strong);
+}
+
+.sort-mark {
+  font-size: 0.65em;
+  opacity: 0.45;
+  line-height: 1;
+}
+
+.sort-th.active .sort-mark {
+  opacity: 1;
+}
+
+.money-col .sort-th {
+  width: 100%;
+  justify-content: flex-end;
+}
+
 
 .report-live {
   animation: rise 0.22s ease both;

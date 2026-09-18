@@ -4,6 +4,12 @@ import { Modal } from '../components/Modal'
 import { MoneyInput } from '../components/MoneyInput'
 import { PageHeader } from '../components/PageHeader'
 import { RowActions } from '../components/RowActions'
+import {
+  compareValues,
+  SortableTh,
+  toggleSort,
+  type SortState,
+} from '../components/SortableTh'
 import { useFinance } from '../FinanceContext'
 import type { FundType, Income } from '../types'
 import {
@@ -14,6 +20,8 @@ import {
   todayIso,
   toMoneyInput,
 } from '../utils'
+
+type SortKey = 'date' | 'member' | 'type' | 'fund' | 'amount'
 
 const emptyForm = () => ({
   date: todayIso(),
@@ -32,6 +40,7 @@ export function IncomesPage() {
   const [form, setForm] = useState(emptyForm)
   const [typeFilter, setTypeFilter] = useState('')
   const [memberFilter, setMemberFilter] = useState('')
+  const [sort, setSort] = useState<SortState<SortKey>>({ key: 'date', dir: 'desc' })
 
   const memberMap = useMemo(
     () => Object.fromEntries(data.members.map((m) => [m.id, m.name])),
@@ -50,11 +59,56 @@ export function IncomesPage() {
   )
 
   const rows = useMemo(() => {
-    return [...data.incomes]
+    const filtered = data.incomes
       .filter((item) => !typeFilter || item.incomeTypeId === typeFilter)
       .filter((item) => !memberFilter || item.memberId === memberFilter)
-      .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
-  }, [data.incomes, typeFilter, memberFilter])
+
+    return [...filtered].sort((a, b) => {
+      const fundA =
+        a.fundType === 'card' && a.cardId
+          ? `${fundTypeLabel(a.fundType)} ${cardMap[a.cardId] ?? ''}`
+          : fundTypeLabel(a.fundType)
+      const fundB =
+        b.fundType === 'card' && b.cardId
+          ? `${fundTypeLabel(b.fundType)} ${cardMap[b.cardId] ?? ''}`
+          : fundTypeLabel(b.fundType)
+
+      const left =
+        sort.key === 'date'
+          ? a.date
+          : sort.key === 'member'
+            ? memberMap[a.memberId] ?? ''
+            : sort.key === 'type'
+              ? typeMap[a.incomeTypeId] ?? ''
+              : sort.key === 'fund'
+                ? fundA
+                : a.amount
+      const right =
+        sort.key === 'date'
+          ? b.date
+          : sort.key === 'member'
+            ? memberMap[b.memberId] ?? ''
+            : sort.key === 'type'
+              ? typeMap[b.incomeTypeId] ?? ''
+              : sort.key === 'fund'
+                ? fundB
+                : b.amount
+
+      return (
+        compareValues(left, right, sort.dir) ||
+        b.date.localeCompare(a.date) ||
+        b.id.localeCompare(a.id)
+      )
+    })
+  }, [
+    data.incomes,
+    typeFilter,
+    memberFilter,
+    sort,
+    memberMap,
+    typeMap,
+    cardMap,
+  ])
 
   const total = useMemo(() => rows.reduce((sum, item) => sum + item.amount, 0), [rows])
 
@@ -164,11 +218,37 @@ export function IncomesPage() {
         <table className="responsive-table">
           <thead>
             <tr>
-              <th>Дата</th>
-              <th>Член семьи</th>
-              <th>Вид дохода</th>
-              <th>Тип денег</th>
-              <th className="money-col">Сумма</th>
+              <SortableTh
+                label="Дата"
+                column="date"
+                sort={sort}
+                onSort={(key) => setSort((prev) => toggleSort(prev, key))}
+              />
+              <SortableTh
+                label="Член семьи"
+                column="member"
+                sort={sort}
+                onSort={(key) => setSort((prev) => toggleSort(prev, key))}
+              />
+              <SortableTh
+                label="Вид дохода"
+                column="type"
+                sort={sort}
+                onSort={(key) => setSort((prev) => toggleSort(prev, key))}
+              />
+              <SortableTh
+                label="Тип денег"
+                column="fund"
+                sort={sort}
+                onSort={(key) => setSort((prev) => toggleSort(prev, key))}
+              />
+              <SortableTh
+                label="Сумма"
+                column="amount"
+                sort={sort}
+                onSort={(key) => setSort((prev) => toggleSort(prev, key))}
+                className="money-col"
+              />
               <th />
             </tr>
           </thead>
