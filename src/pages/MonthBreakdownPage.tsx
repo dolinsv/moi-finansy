@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { useFinance } from '../FinanceContext'
@@ -13,27 +13,25 @@ import {
 
 type Kind = 'income' | 'expense'
 
+type Line = {
+  id: string
+  date: string
+  typeId: string
+  typeName: string
+  amount: number
+  member: string
+  fund: string
+  comment?: string
+}
+
 export function MonthBreakdownPage() {
   const { kind, month } = useParams()
   const { data } = useFinance()
   const cursor = month ? parseMonthKey(month) : null
   const mode: Kind = kind === 'expense' ? 'expense' : 'income'
-
   const bounds = cursor ? monthBounds(cursor) : null
-
-  const rows = useMemo(() => {
-    if (!bounds) return []
-    if (mode === 'income') {
-      return data.incomes
-        .filter((item) => item.date >= bounds.from && item.date <= bounds.to)
-        .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
-    }
-    return data.expenses
-      .filter((item) => item.date >= bounds.from && item.date <= bounds.to)
-      .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
-  }, [bounds, data.expenses, data.incomes, mode])
-
-  const total = rows.reduce((sum, item) => sum + item.amount, 0)
+  const [typeFilter, setTypeFilter] = useState('')
+  const [openId, setOpenId] = useState<string | null>(null)
 
   const memberMap = useMemo(
     () => Object.fromEntries(data.members.map((m) => [m.id, m.name])),
@@ -55,6 +53,62 @@ export function MonthBreakdownPage() {
     [data.cards],
   )
 
+  const lines = useMemo<Line[]>(() => {
+    if (!bounds) return []
+    const source =
+      mode === 'income'
+        ? data.incomes.filter((item) => item.date >= bounds.from && item.date <= bounds.to)
+        : data.expenses.filter((item) => item.date >= bounds.from && item.date <= bounds.to)
+
+    return source
+      .map((item) => {
+        const typeId =
+          'incomeTypeId' in item ? item.incomeTypeId : item.expenseTypeId
+        const typeName =
+          mode === 'income'
+            ? incomeTypeMap[typeId] ?? '—'
+            : expenseTypeMap[typeId] ?? '—'
+        const fund =
+          item.fundType === 'card' && item.cardId
+            ? `${fundTypeLabel(item.fundType)} · ${cardMap[item.cardId] ?? ''}`
+            : fundTypeLabel(item.fundType)
+        return {
+          id: item.id,
+          date: item.date,
+          typeId,
+          typeName,
+          amount: item.amount,
+          member: memberMap[item.memberId] ?? '—',
+          fund,
+          comment: item.comment,
+        }
+      })
+      .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
+  }, [
+    bounds,
+    cardMap,
+    data.expenses,
+    data.incomes,
+    expenseTypeMap,
+    incomeTypeMap,
+    memberMap,
+    mode,
+  ])
+
+  const types = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; sum: number }>()
+    for (const line of lines) {
+      const prev = map.get(line.typeId)
+      if (prev) prev.sum += line.amount
+      else map.set(line.typeId, { id: line.typeId, name: line.typeName, sum: line.amount })
+    }
+    return [...map.values()].sort((a, b) => b.sum - a.sum)
+  }, [lines])
+
+  const visible = typeFilter ? lines.filter((line) => line.typeId === typeFilter) : lines
+  const total = visible.reduce((sum, line) => sum + line.amount, 0)
+  const max = visible.reduce((m, line) => Math.max(m, line.amount), 0)
+
   if (!cursor || !bounds) {
     return (
       <div className="page fade-in">
@@ -67,18 +121,13 @@ export function MonthBreakdownPage() {
   }
 
   const title = mode === 'income' ? 'Доходы' : 'Расходы'
-  const typeLabel = mode === 'income' ? 'Вид дохода' : 'Вид расхода'
   const label = monthLabel(cursor)
 
   return (
-    <div className="page fade-in">
+    <div className={`page breakdown-page fade-in ${mode}`}>
       <PageHeader
         title={title}
-        subtitle={
-          bounds.current
-            ? `Из чего сложилась сумма · ${label} · до сегодня`
-            : `Из чего сложилась сумма · ${label}`
-        }
+        subtitle={bounds.current ? `${label} · до сегодня` : label}
         action={
           <Link className="btn ghost" to="/">
             На главную
@@ -86,71 +135,75 @@ export function MonthBreakdownPage() {
         }
       />
 
-      <div className="journal-filters">
-        <div className="journal-total">
-          <span>Документов: {rows.length}</span>
-          <strong className={mode === 'income' ? 'money up' : 'money down'}>
-            {formatMoney(total)}
-          </strong>
-        </div>
-      </div>
+      <section className="breakdown-total">
+        <span>Сумма</span>
+        <strong>{formatMoney(total)}</strong>
+      </section>
 
-      <div className="table-wrap journal-table">
-        <table className="responsive-table">
-          <thead>
-            <tr>
-              <th>Дата</th>
-              <th>Член семьи</th>
-              <th>{typeLabel}</th>
-              <th>Тип денег</th>
-              <th className="money-col">Сумма</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="empty">
-                  За этот месяц документов нет.
-                </td>
-              </tr>
-            ) : mode === 'income' ? (
-              (rows as typeof data.incomes).map((item) => (
-                <tr key={item.id}>
-                  <td data-label="Дата">{formatDate(item.date)}</td>
-                  <td data-label="Член семьи">{memberMap[item.memberId] ?? '—'}</td>
-                  <td data-label={typeLabel}>{incomeTypeMap[item.incomeTypeId] ?? '—'}</td>
-                  <td data-label="Тип денег" className="fund-cell">
-                    {fundTypeLabel(item.fundType)}
-                    {item.fundType === 'card' && item.cardId
-                      ? ` · ${cardMap[item.cardId] ?? ''}`
-                      : ''}
-                  </td>
-                  <td data-label="Сумма" className="money money-col up">
-                    {formatMoney(item.amount)}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              (rows as typeof data.expenses).map((item) => (
-                <tr key={item.id}>
-                  <td data-label="Дата">{formatDate(item.date)}</td>
-                  <td data-label="Член семьи">{memberMap[item.memberId] ?? '—'}</td>
-                  <td data-label={typeLabel}>{expenseTypeMap[item.expenseTypeId] ?? '—'}</td>
-                  <td data-label="Тип денег" className="fund-cell">
-                    {fundTypeLabel(item.fundType)}
-                    {item.fundType === 'card' && item.cardId
-                      ? ` · ${cardMap[item.cardId] ?? ''}`
-                      : ''}
-                  </td>
-                  <td data-label="Сумма" className="money money-col down">
-                    {formatMoney(item.amount)}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {types.length > 1 ? (
+        <div className="breakdown-chips" role="tablist" aria-label="Вид">
+          <button
+            type="button"
+            className={typeFilter === '' ? 'breakdown-chip active' : 'breakdown-chip'}
+            onClick={() => {
+              setTypeFilter('')
+              setOpenId(null)
+            }}
+          >
+            Все
+          </button>
+          {types.map((type) => (
+            <button
+              key={type.id}
+              type="button"
+              className={
+                typeFilter === type.id ? 'breakdown-chip active' : 'breakdown-chip'
+              }
+              onClick={() => {
+                setTypeFilter(type.id)
+                setOpenId(null)
+              }}
+            >
+              {type.name}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {visible.length === 0 ? (
+        <p className="empty-block">За этот месяц записей нет.</p>
+      ) : (
+        <ul className="breakdown-list">
+          {visible.map((line) => {
+            const open = openId === line.id
+            const share = max > 0 ? Math.max(8, Math.round((line.amount / max) * 100)) : 0
+            return (
+              <li key={line.id}>
+                <button
+                  type="button"
+                  className={open ? 'breakdown-row open' : 'breakdown-row'}
+                  onClick={() => setOpenId(open ? null : line.id)}
+                  aria-expanded={open}
+                >
+                  <div className="breakdown-main">
+                    <strong>{line.typeName}</strong>
+                    <span>{formatDate(line.date)}</span>
+                  </div>
+                  <em>{formatMoney(line.amount)}</em>
+                  <i className="breakdown-bar" style={{ width: `${share}%` }} />
+                </button>
+                {open ? (
+                  <div className="breakdown-detail">
+                    <span>{line.member}</span>
+                    <span>{line.fund}</span>
+                    {line.comment ? <span>{line.comment}</span> : null}
+                  </div>
+                ) : null}
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </div>
   )
 }
