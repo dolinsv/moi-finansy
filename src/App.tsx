@@ -7,7 +7,7 @@ import { DirectoriesPage } from './pages/DirectoriesPage'
 import { ExpensesPage } from './pages/ExpensesPage'
 import { HomePage } from './pages/HomePage'
 import { IncomesPage } from './pages/IncomesPage'
-import { LoginPage } from './pages/LoginPage'
+import { MonthBreakdownPage } from './pages/MonthBreakdownPage'
 import { ReportsPage } from './pages/ReportsPage'
 import { ThemeProvider } from './theme'
 
@@ -23,6 +23,7 @@ export default function App() {
                 <Route index element={<HomePage />} />
                 <Route path="incomes" element={<IncomesPage />} />
                 <Route path="expenses" element={<ExpensesPage />} />
+                <Route path="breakdown/:kind/:month" element={<MonthBreakdownPage />} />
                 <Route path="directories" element={<DirectoriesPage />} />
                 <Route path="credits" element={<CreditsPage />} />
                 <Route path="reports" element={<ReportsPage />} />

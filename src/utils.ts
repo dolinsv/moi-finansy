@@ -101,6 +101,28 @@ export function isSameMonth(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth()
 }
 
+export function monthKey(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  return `${y}-${m}`
+}
+
+export function parseMonthKey(key: string): Date | null {
+  const match = /^(\d{4})-(\d{2})$/.exec(key)
+  if (!match) return null
+  const year = Number(match[1])
+  const month = Number(match[2])
+  if (month < 1 || month > 12) return null
+  return new Date(year, month - 1, 1)
+}
+
+export function monthBounds(cursor: Date, now = new Date()) {
+  const from = monthStartIso(cursor)
+  const current = isSameMonth(cursor, now)
+  const to = current ? toLocalIso(now) : monthEndIso(cursor)
+  return { from, to, current }
+}
+
 export function monthLabel(date = new Date()): string {
   return new Intl.DateTimeFormat('ru-RU', {
     month: 'long',

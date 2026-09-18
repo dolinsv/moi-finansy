@@ -11,6 +11,7 @@ import {
   monthEndIso,
   monthLabel,
   monthStartIso,
+  monthKey,
   shiftMonth,
   sumBy,
   todayIso,
@@ -97,7 +98,10 @@ export function HomePage() {
       </section>
 
       <div className="summary-panel">
-        <Link to="/incomes" className="summary-item tone-up">
+        <Link
+          to={`/breakdown/income/${monthKey(monthCursor)}`}
+          className="summary-item tone-up"
+        >
           <div className="summary-item-top">
             <span className="summary-icon up">
               <IncomeIcon size={16} />
@@ -106,7 +110,10 @@ export function HomePage() {
           </div>
           <strong className="up">{formatMoney(incomeSum)}</strong>
         </Link>
-        <Link to="/expenses" className="summary-item tone-down">
+        <Link
+          to={`/breakdown/expense/${monthKey(monthCursor)}`}
+          className="summary-item tone-down"
+        >
           <div className="summary-item-top">
             <span className="summary-icon down">
               <ExpenseIcon size={16} />
