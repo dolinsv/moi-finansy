@@ -38,7 +38,7 @@ const bottomLinks = [
 ]
 
 export function Layout() {
-  const { currentUser, logout, isVkMiniApp, vkUser } = useFinance()
+  const { currentUser, logout, isVkMiniApp, vkUser, cloud } = useFinance()
   const { theme, toggleTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
@@ -157,6 +157,9 @@ export function Layout() {
           <div className="user-box">
             <strong>{userLabel}</strong>
             <span>{userSub}</span>
+            <span className="cloud-pill" title={cloud.label}>
+              {cloud.configured ? '☁ Облако' : 'Локально'}
+            </span>
           </div>
           <div className="sidebar-tools">
             <button

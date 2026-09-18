@@ -14,6 +14,7 @@
     "deploy:pages": "tsc -b && vite build --base=/moi-finansy/ && gh-pages -d dist"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
     "@vkontakte/vk-bridge": "^3.0.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

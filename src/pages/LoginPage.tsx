@@ -6,7 +6,7 @@ import { useFinance } from '../FinanceContext'
 import { useTheme } from '../theme'
 
 export function LoginPage() {
-  const { currentUser, login, authReady, isVkMiniApp } = useFinance()
+  const { currentUser, login, authReady, isVkMiniApp, cloud } = useFinance()
   const { theme, toggleTheme } = useTheme()
   const [loginName, setLoginName] = useState('')
   const [password, setPassword] = useState('')
@@ -89,6 +89,8 @@ export function LoginPage() {
         <button type="submit" className="btn primary full">
           Войти
         </button>
+
+        <p className="login-hint">{cloud.label}</p>
       </form>
     </div>
   )

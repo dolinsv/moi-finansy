@@ -4,9 +4,16 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
+import {
+  isSupabaseConfigured,
+  loadRemoteState,
+  saveRemoteState,
+  subscribeRemoteState,
+} from './lib/supabase'
 import { loadData, loadSession, saveData, saveSession } from './store'
 import type {
   AppData,
@@ -29,12 +36,19 @@ import {
   type VkUser,
 } from './vk'
 
+type CloudStatus = {
+  configured: boolean
+  ready: boolean
+  label: string
+}
+
 interface FinanceContextValue {
   data: AppData
   currentUser: FamilyMember | null
   authReady: boolean
   isVkMiniApp: boolean
   vkUser: VkUser | null
+  cloud: CloudStatus
   login: (loginName: string, password: string) => string | null
   logout: () => void
   addIncome: (item: Omit<Income, 'id'>) => void
@@ -64,6 +78,7 @@ interface FinanceContextValue {
 }
 
 const FinanceContext = createContext<FinanceContextValue | null>(null)
+const UPDATED_KEY = 'moi-finansy-cloud-updated-at'
 
 function withId<T extends object>(item: T): T & { id: string } {
   return { ...item, id: crypto.randomUUID() }
@@ -76,6 +91,14 @@ function vkDisplayName(user: VkUser) {
   )
 }
 
+function getLocalUpdatedAt() {
+  return Number(localStorage.getItem(UPDATED_KEY) || '0')
+}
+
+function setLocalUpdatedAt(ts: number) {
+  localStorage.setItem(UPDATED_KEY, String(ts))
+}
+
 export function FinanceProvider({
   children,
   onVkTheme,
@@ -84,20 +107,121 @@ export function FinanceProvider({
   onVkTheme?: (theme: 'light' | 'dark') => void
 }) {
   const isVkMiniApp = useMemo(() => isVkEnvironment(), [])
+  const configured = isSupabaseConfigured()
   const [data, setData] = useState<AppData>(() => loadData())
   const [sessionId, setSessionId] = useState<string | null>(() =>
     isVkMiniApp ? null : loadSession(),
   )
   const [vkUser, setVkUser] = useState<VkUser | null>(null)
   const [authReady, setAuthReady] = useState(!isVkMiniApp)
+  const [cloudReady, setCloudReady] = useState(!configured)
+  const [cloudLabel, setCloudLabel] = useState(
+    configured ? 'Подключение к облаку…' : 'Локальный режим (облако не настроено)',
+  )
 
-  const commit = useCallback((updater: (prev: AppData) => AppData) => {
-    setData((prev) => {
-      const next = updater(prev)
-      saveData(next)
-      return next
-    })
+  const dataRef = useRef(data)
+  const updatedAtRef = useRef(getLocalUpdatedAt())
+  const pushTimer = useRef<number | null>(null)
+  const applyingRemote = useRef(false)
+
+  useEffect(() => {
+    dataRef.current = data
+  }, [data])
+
+  const applyData = useCallback((next: AppData, updatedAt: number, fromRemote = false) => {
+    if (fromRemote) applyingRemote.current = true
+    updatedAtRef.current = updatedAt
+    setLocalUpdatedAt(updatedAt)
+    saveData(next)
+    setData(next)
+    if (fromRemote) {
+      window.setTimeout(() => {
+        applyingRemote.current = false
+      }, 30)
+    }
   }, [])
+
+  const scheduleRemoteSave = useCallback((next: AppData) => {
+    if (!configured || applyingRemote.current) return
+
+    const updatedAt = Date.now()
+    updatedAtRef.current = updatedAt
+    setLocalUpdatedAt(updatedAt)
+    setCloudLabel('Сохранение…')
+
+    if (pushTimer.current) window.clearTimeout(pushTimer.current)
+    pushTimer.current = window.setTimeout(async () => {
+      try {
+        await saveRemoteState(next, updatedAt)
+        setCloudLabel('Облако синхронизировано')
+      } catch (e) {
+        setCloudLabel(
+          e instanceof Error ? `Ошибка облака: ${e.message}` : 'Ошибка облака',
+        )
+      }
+    }, 500)
+  }, [configured])
+
+  const commit = useCallback(
+    (updater: (prev: AppData) => AppData) => {
+      setData((prev) => {
+        const next = updater(prev)
+        saveData(next)
+        scheduleRemoteSave(next)
+        return next
+      })
+    },
+    [scheduleRemoteSave],
+  )
+
+  useEffect(() => {
+    if (!configured) return
+
+    let cancelled = false
+    ;(async () => {
+      try {
+        const remote = await loadRemoteState()
+        if (cancelled) return
+
+        if (!remote) {
+          const local = dataRef.current
+          const updatedAt = Date.now()
+          await saveRemoteState(local, updatedAt)
+          updatedAtRef.current = updatedAt
+          setLocalUpdatedAt(updatedAt)
+          setCloudLabel('Данные выгружены в облако')
+        } else if (remote.updatedAt >= updatedAtRef.current) {
+          applyData(remote.data, remote.updatedAt, true)
+          setCloudLabel('Данные загружены из облака')
+        } else {
+          await saveRemoteState(dataRef.current, updatedAtRef.current || Date.now())
+          setCloudLabel('Локальные данные отправлены в облако')
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setCloudLabel(
+            e instanceof Error
+              ? `Облако недоступно: ${e.message}`
+              : 'Облако недоступно',
+          )
+        }
+      } finally {
+        if (!cancelled) setCloudReady(true)
+      }
+    })()
+
+    const unsubscribe = subscribeRemoteState((payload, updatedAt) => {
+      if (updatedAt <= updatedAtRef.current) return
+      applyData(payload, updatedAt, true)
+      setCloudLabel('Обновлено с другого устройства')
+    })
+
+    return () => {
+      cancelled = true
+      unsubscribe()
+      if (pushTimer.current) window.clearTimeout(pushTimer.current)
+    }
+  }, [applyData, configured])
 
   const currentUser = useMemo(
     () => data.members.find((m) => m.id === sessionId) ?? null,
@@ -130,12 +254,13 @@ export function FinanceProvider({
 
       const next = { ...prev, members: nextMembers }
       saveData(next)
+      scheduleRemoteSave(next)
       setSessionId(member.id)
       saveSession(member.id)
       return next
     })
     setVkUser(user)
-  }, [])
+  }, [scheduleRemoteSave])
 
   useEffect(() => {
     if (!isVkMiniApp) return
@@ -185,13 +310,23 @@ export function FinanceProvider({
     saveSession(null)
   }, [isVkMiniApp])
 
+  const cloud = useMemo<CloudStatus>(
+    () => ({
+      configured,
+      ready: cloudReady,
+      label: cloudLabel,
+    }),
+    [cloudLabel, cloudReady, configured],
+  )
+
   const value = useMemo<FinanceContextValue>(
     () => ({
       data,
       currentUser,
-      authReady,
+      authReady: authReady && cloudReady,
       isVkMiniApp,
       vkUser,
+      cloud,
       login,
       logout,
       addIncome: (item) =>
@@ -326,6 +461,8 @@ export function FinanceProvider({
     }),
     [
       authReady,
+      cloud,
+      cloudReady,
       commit,
       currentUser,
       data,

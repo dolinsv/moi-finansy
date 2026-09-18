@@ -156,6 +156,19 @@ a {
   font-size: var(--text-sm);
 }
 
+.cloud-pill {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong) !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 700;
+}
+
 .brand {
   display: flex;
   gap: 11px;
