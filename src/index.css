@@ -448,10 +448,49 @@ a {
 .balance-value.down { color: var(--down); }
 
 .balance-sub {
-  margin: 6px 0 0;
+  margin: 0;
   color: var(--muted);
   font-size: var(--text-sm);
+  min-width: 0;
+  text-align: center;
 }
+
+.month-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.month-nav {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  display: inline-grid;
+  place-items: center;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  box-shadow: var(--shadow);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.month-nav:hover {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+}
+
+.month-nav:active {
+  transform: scale(0.96);
+}
+
 
 .summary-row {
   display: grid;

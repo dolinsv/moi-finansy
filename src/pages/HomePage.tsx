@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CreditIcon, DirectoryIcon, ExpenseIcon, IncomeIcon, ReportIcon } from '../components/Icons'
 import { useFinance } from '../FinanceContext'
@@ -6,26 +7,40 @@ import {
   daysInMonth,
   firstNameFromFio,
   formatMoney,
+  isSameMonth,
+  monthEndIso,
   monthLabel,
   monthStartIso,
+  shiftMonth,
   sumBy,
   todayIso,
 } from '../utils'
 
 export function HomePage() {
   const { data, currentUser } = useFinance()
-  const from = monthStartIso()
-  const to = todayIso()
   const now = new Date()
-  const day = dayOfMonth(now)
-  const daysTotal = daysInMonth(now)
+  const [monthCursor, setMonthCursor] = useState(
+    () => new Date(now.getFullYear(), now.getMonth(), 1),
+  )
+
+  const currentMonth = isSameMonth(monthCursor, now)
+  const from = monthStartIso(monthCursor)
+  const to = currentMonth ? todayIso() : monthEndIso(monthCursor)
+  const daysTotal = daysInMonth(monthCursor)
+  const day = currentMonth
+    ? dayOfMonth(now)
+    : monthCursor.getTime() < new Date(now.getFullYear(), now.getMonth(), 1).getTime()
+      ? daysTotal
+      : 0
   const progress = Math.min(100, Math.round((day / daysTotal) * 100))
 
-  const monthIncomes = data.incomes.filter(
-    (x) => x.date >= from && x.date <= to,
+  const monthIncomes = useMemo(
+    () => data.incomes.filter((x) => x.date >= from && x.date <= to),
+    [data.incomes, from, to],
   )
-  const monthExpenses = data.expenses.filter(
-    (x) => x.date >= from && x.date <= to,
+  const monthExpenses = useMemo(
+    () => data.expenses.filter((x) => x.date >= from && x.date <= to),
+    [data.expenses, from, to],
   )
   const incomeSum = sumBy(monthIncomes, (x) => x.amount)
   const expenseSum = sumBy(monthExpenses, (x) => x.amount)
@@ -37,6 +52,7 @@ export function HomePage() {
   const hello =
     hour < 12 ? 'Доброе утро' : hour < 18 ? 'Добрый день' : 'Добрый вечер'
   const greetName = currentUser?.name ? firstNameFromFio(currentUser.name) : ''
+  const label = monthLabel(monthCursor)
 
   return (
     <div className="page home-page fade-in">
@@ -45,7 +61,25 @@ export function HomePage() {
         <p className={`balance-value ${balance >= 0 ? 'up' : 'down'}`}>
           {formatMoney(balance)}
         </p>
-        <p className="balance-sub">Семейный учёт · {monthLabel(now)}</p>
+        <div className="month-switcher">
+          <button
+            type="button"
+            className="month-nav"
+            onClick={() => setMonthCursor((prev) => shiftMonth(prev, -1))}
+            aria-label="Предыдущий месяц"
+          >
+            ‹
+          </button>
+          <p className="balance-sub">Семейный учёт · {label}</p>
+          <button
+            type="button"
+            className="month-nav"
+            onClick={() => setMonthCursor((prev) => shiftMonth(prev, 1))}
+            aria-label="Следующий месяц"
+          >
+            ›
+          </button>
+        </div>
       </section>
 
       <div className="summary-row">
@@ -90,7 +124,7 @@ export function HomePage() {
 
       <section className="month-card">
         <div className="month-card-head">
-          <h2>{monthLabel(now)}</h2>
+          <h2>{label}</h2>
           <span>
             {day} / {daysTotal} дней
           </span>

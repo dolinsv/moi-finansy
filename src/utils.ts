@@ -75,12 +75,30 @@ export function fundTypeLabel(type: FundType): string {
 }
 
 export function todayIso(): string {
-  return new Date().toISOString().slice(0, 10)
+  return toLocalIso(new Date())
 }
 
-export function monthStartIso(): string {
-  const d = new Date()
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10)
+export function toLocalIso(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+export function monthStartIso(date = new Date()): string {
+  return toLocalIso(new Date(date.getFullYear(), date.getMonth(), 1))
+}
+
+export function monthEndIso(date = new Date()): string {
+  return toLocalIso(new Date(date.getFullYear(), date.getMonth() + 1, 0))
+}
+
+export function shiftMonth(date: Date, delta: number): Date {
+  return new Date(date.getFullYear(), date.getMonth() + delta, 1)
+}
+
+export function isSameMonth(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth()
 }
 
 export function monthLabel(date = new Date()): string {
