@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { FundTypeFields } from '../components/FundTypeFields'
 import { Modal } from '../components/Modal'
 import { MoneyInput } from '../components/MoneyInput'
-import { PageHeader } from '../components/PageHeader'
+import { SelectSheet } from '../components/SelectSheet'
 import { RowActions } from '../components/RowActions'
 import {
   compareValues,
@@ -183,31 +183,24 @@ export function IncomesPage() {
       />
 
       <div className="journal-filters">
-        <label className="field">
-          <span>Вид дохода</span>
-          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-            <option value="">Все</option>
-            {data.incomeTypes.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field">
-          <span>Член семьи</span>
-          <select
-            value={memberFilter}
-            onChange={(e) => setMemberFilter(e.target.value)}
-          >
-            <option value="">Все</option>
-            {data.members.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <SelectSheet
+          label="Вид дохода"
+          value={typeFilter}
+          onChange={setTypeFilter}
+          options={[
+            { value: '', label: 'Все' },
+            ...data.incomeTypes.map((t) => ({ value: t.id, label: t.name })),
+          ]}
+        />
+        <SelectSheet
+          label="Член семьи"
+          value={memberFilter}
+          onChange={setMemberFilter}
+          options={[
+            { value: '', label: 'Все' },
+            ...data.members.map((m) => ({ value: m.id, label: m.name })),
+          ]}
+        />
         <div className="journal-total">
           <span>Итого</span>
           <strong className="money up">{formatMoney(total)}</strong>

@@ -1323,7 +1323,7 @@ td.money-col {
   justify-content: center;
   padding: 20px;
   z-index: 1000;
-  animation: fade 0.16s ease;
+  animation: fade 0.22s ease;
   overflow: auto;
 }
 
@@ -1335,7 +1335,7 @@ td.money-col {
   border: 1px solid var(--line-soft);
   border-radius: 18px;
   box-shadow: var(--shadow);
-  animation: pop 0.2s ease;
+  animation: sheet-rise 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   margin: auto;
 }
 
@@ -1483,6 +1483,173 @@ td.money-col {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes sheet-rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.select-sheet-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.select-sheet-trigger:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+}
+
+.select-sheet-trigger-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select-sheet-chevron {
+  display: inline-grid;
+  place-items: center;
+  color: var(--muted);
+  transform: rotate(90deg);
+  flex-shrink: 0;
+}
+
+.select-sheet-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.select-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: var(--overlay);
+  cursor: pointer;
+  animation: fade 0.22s ease;
+}
+
+.select-sheet-panel {
+  position: relative;
+  z-index: 1;
+  width: min(520px, 100%);
+  max-height: min(72dvh, 640px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.18);
+  animation: sheet-rise 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.select-sheet-head {
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.select-sheet-handle {
+  width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line);
+  margin: 0 auto 10px;
+}
+
+.select-sheet-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.select-sheet-title-row h2 {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.select-sheet-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.select-sheet-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 14px;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-base);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.select-sheet-option:hover {
+  background: var(--surface-2);
+}
+
+.select-sheet-option.active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.select-sheet-check {
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+@media (min-width: 721px) {
+  .select-sheet-root {
+    align-items: center;
+    padding: 24px;
+  }
+
+  .select-sheet-panel {
+    border-radius: 20px;
+    max-height: min(70vh, 560px);
+    box-shadow: var(--shadow);
+  }
+
+  .select-sheet-handle {
+    display: none;
   }
 }
 
