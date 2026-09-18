@@ -53,7 +53,7 @@ export function toMoneyInput(value: number | string | null | undefined): string 
   const negative = n < 0
   const [intPart, frac = '00'] = Math.abs(n).toFixed(2).split('.')
   const withSpaces = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
-  const result = frac === '00' ? withSpaces : `${withSpaces},${frac}`
+  const result = `${withSpaces},${frac}`
   return negative ? `-${result}` : result
 }
 

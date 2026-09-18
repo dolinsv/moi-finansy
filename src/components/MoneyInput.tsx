@@ -1,4 +1,4 @@
-import { formatMoneyInput } from '../utils'
+import { formatMoneyInput, parseMoney, toMoneyInput } from '../utils'
 
 type MoneyInputProps = {
   value: string
@@ -11,7 +11,7 @@ export function MoneyInput({
   value,
   onChange,
   required,
-  placeholder = '0',
+  placeholder = '0,00',
 }: MoneyInputProps) {
   return (
     <input
@@ -21,6 +21,11 @@ export function MoneyInput({
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(formatMoneyInput(e.target.value))}
+      onBlur={() => {
+        if (!value.trim() || value === '-') return
+        const amount = parseMoney(value)
+        if (Number.isFinite(amount)) onChange(toMoneyInput(amount))
+      }}
       required={required}
     />
   )
