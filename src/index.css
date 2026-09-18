@@ -851,6 +851,11 @@ tbody tr:last-child td {
 .money.up { color: var(--up); }
 .money.down { color: var(--down); }
 
+th.money-col,
+td.money-col {
+  text-align: right;
+}
+
 .empty {
   color: var(--muted);
   text-align: center !important;
@@ -928,6 +933,66 @@ tbody tr:last-child td {
   padding: 14px;
   margin-bottom: 14px;
 }
+
+.journal-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.journal-filters .field {
+  flex: 1 1 180px;
+  min-width: 160px;
+  margin: 0;
+}
+
+.journal-total {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: auto;
+  min-width: 140px;
+  padding: 2px 0;
+}
+
+.journal-total span {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.journal-total strong {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.doc-number {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.money-col {
+  text-align: right;
+}
+
+.journal-table .money {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
 
 .report-live {
   animation: rise 0.22s ease both;
@@ -1520,6 +1585,20 @@ tbody tr:last-child td {
   .field-row,
   .filters {
     grid-template-columns: 1fr;
+  }
+
+  .journal-filters {
+    padding: 12px;
+  }
+
+  .journal-total {
+    margin-left: 0;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-top: 4px;
+    border-top: 1px solid var(--line-soft);
   }
 
   .seg-full {

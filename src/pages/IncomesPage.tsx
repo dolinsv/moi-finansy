@@ -6,7 +6,15 @@ import { PageHeader } from '../components/PageHeader'
 import { RowActions } from '../components/RowActions'
 import { useFinance } from '../FinanceContext'
 import type { FundType, Income } from '../types'
-import { formatDate, formatMoney, fundTypeLabel, parseMoney, todayIso, toMoneyInput } from '../utils'
+import {
+  formatDate,
+  formatDocNumber,
+  formatMoney,
+  fundTypeLabel,
+  parseMoney,
+  todayIso,
+  toMoneyInput,
+} from '../utils'
 
 const emptyForm = () => ({
   date: todayIso(),
@@ -23,6 +31,8 @@ export function IncomesPage() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Income | null>(null)
   const [form, setForm] = useState(emptyForm)
+  const [typeFilter, setTypeFilter] = useState('')
+  const [memberFilter, setMemberFilter] = useState('')
 
   const memberMap = useMemo(
     () => Object.fromEntries(data.members.map((m) => [m.id, m.name])),
@@ -40,12 +50,24 @@ export function IncomesPage() {
     [data.cards],
   )
 
+  const rows = useMemo(() => {
+    return [...data.incomes]
+      .filter((item) => !typeFilter || item.incomeTypeId === typeFilter)
+      .filter((item) => !memberFilter || item.memberId === memberFilter)
+      .sort((a, b) => {
+        if (a.date !== b.date) return b.date.localeCompare(a.date)
+        return b.number - a.number
+      })
+  }, [data.incomes, typeFilter, memberFilter])
+
+  const total = useMemo(() => rows.reduce((sum, item) => sum + item.amount, 0), [rows])
+
   const openCreate = () => {
     setEditing(null)
     setForm({
       ...emptyForm(),
       memberId: data.members[0]?.id ?? '',
-      incomeTypeId: data.incomeTypes[0]?.id ?? '',
+      incomeTypeId: typeFilter || data.incomeTypes[0]?.id || '',
     })
     setOpen(true)
   }
@@ -93,7 +115,7 @@ export function IncomesPage() {
       comment: form.comment.trim() || undefined,
     }
 
-    if (editing) updateIncome({ ...payload, id: editing.id })
+    if (editing) updateIncome({ ...payload, id: editing.id, number: editing.number })
     else addIncome(payload)
     setOpen(false)
   }
@@ -102,7 +124,7 @@ export function IncomesPage() {
     <div className="page fade-in">
       <PageHeader
         title="Приходы"
-        subtitle="Ввод поступлений денег в семью"
+        subtitle="Журнал документов поступлений"
         action={
           <button type="button" className="btn primary" onClick={openCreate}>
             Новый приход
@@ -110,38 +132,80 @@ export function IncomesPage() {
         }
       />
 
-      <div className="table-wrap">
+      <div className="journal-filters">
+        <label className="field">
+          <span>Вид дохода</span>
+          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+            <option value="">Все</option>
+            {data.incomeTypes.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span>Член семьи</span>
+          <select
+            value={memberFilter}
+            onChange={(e) => setMemberFilter(e.target.value)}
+          >
+            <option value="">Все</option>
+            {data.members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="journal-total">
+          <span>Итого</span>
+          <strong className="money up">{formatMoney(total)}</strong>
+        </div>
+      </div>
+
+      <div className="table-wrap journal-table">
         <table className="responsive-table">
           <thead>
             <tr>
+              <th>Номер</th>
               <th>Дата</th>
               <th>Член семьи</th>
               <th>Вид дохода</th>
-              <th>Средства</th>
-              <th>Сумма</th>
+              <th>Тип денег</th>
+              <th className="money-col">Сумма</th>
               <th />
             </tr>
           </thead>
           <tbody>
-            {data.incomes.length === 0 ? (
+            {rows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="empty">
-                  Пока нет приходов. Создайте первый документ.
+                <td colSpan={7} className="empty">
+                  {data.incomes.length === 0
+                    ? 'Пока нет приходов. Создайте первый документ.'
+                    : 'Нет документов по выбранным фильтрам.'}
                 </td>
               </tr>
             ) : (
-              data.incomes.map((item) => (
+              rows.map((item) => (
                 <tr key={item.id}>
+                  <td data-label="Номер" className="doc-number">
+                    {formatDocNumber(item.number)}
+                  </td>
                   <td data-label="Дата">{formatDate(item.date)}</td>
-                  <td data-label="Член семьи">{memberMap[item.memberId] ?? '—'}</td>
-                  <td data-label="Вид дохода">{typeMap[item.incomeTypeId] ?? '—'}</td>
-                  <td data-label="Средства">
+                  <td data-label="Член семьи">
+                    {memberMap[item.memberId] ?? '—'}
+                  </td>
+                  <td data-label="Вид дохода">
+                    {typeMap[item.incomeTypeId] ?? '—'}
+                  </td>
+                  <td data-label="Тип денег">
                     {fundTypeLabel(item.fundType)}
                     {item.fundType === 'card' && item.cardId
                       ? ` · ${cardMap[item.cardId] ?? ''}`
                       : ''}
                   </td>
-                  <td data-label="Сумма" className="money up">
+                  <td data-label="Сумма" className="money up money-col">
                     {formatMoney(item.amount)}
                   </td>
                   <td className="actions-cell">
@@ -206,7 +270,11 @@ export function IncomesPage() {
           cardId={form.cardId}
           cards={data.cards}
           onFundTypeChange={(fundType) =>
-            setForm({ ...form, fundType, cardId: fundType === 'card' ? form.cardId : '' })
+            setForm({
+              ...form,
+              fundType,
+              cardId: fundType === 'card' ? form.cardId : '',
+            })
           }
           onCardChange={(cardId) => setForm({ ...form, cardId })}
         />

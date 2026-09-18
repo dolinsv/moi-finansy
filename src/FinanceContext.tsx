@@ -26,6 +26,7 @@ import type {
   Income,
   IncomeType,
 } from './types'
+import { nextDocNumber } from './utils'
 
 type CloudStatus = {
   configured: boolean
@@ -40,10 +41,10 @@ interface FinanceContextValue {
   cloud: CloudStatus
   login: (loginName: string, password: string) => string | null
   logout: () => void
-  addIncome: (item: Omit<Income, 'id'>) => void
+  addIncome: (item: Omit<Income, 'id' | 'number'>) => void
   updateIncome: (item: Income) => void
   removeIncome: (id: string) => void
-  addExpense: (item: Omit<Expense, 'id'>) => void
+  addExpense: (item: Omit<Expense, 'id' | 'number'>) => void
   updateExpense: (item: Expense) => void
   removeExpense: (id: string) => void
   addMember: (item: Omit<FamilyMember, 'id'>) => void
@@ -286,7 +287,10 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       addIncome: (item) =>
         commit((prev) => ({
           ...prev,
-          incomes: [withId(item), ...prev.incomes],
+          incomes: [
+            { ...withId(item), number: nextDocNumber(prev.incomes) },
+            ...prev.incomes,
+          ],
         })),
       updateIncome: (item) =>
         commit((prev) => ({
@@ -301,7 +305,10 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       addExpense: (item) =>
         commit((prev) => ({
           ...prev,
-          expenses: [withId(item), ...prev.expenses],
+          expenses: [
+            { ...withId(item), number: nextDocNumber(prev.expenses) },
+            ...prev.expenses,
+          ],
         })),
       updateExpense: (item) =>
         commit((prev) => ({
