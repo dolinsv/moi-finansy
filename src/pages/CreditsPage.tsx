@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Modal } from '../components/Modal'
+import { MoneyInput } from '../components/MoneyInput'
 import { PageHeader } from '../components/PageHeader'
 import { RowActions } from '../components/RowActions'
 import { useFinance } from '../FinanceContext'
 import type { Credit, CreditKind, Deposit } from '../types'
-import { formatDate, formatMoney, parseMoney, todayIso } from '../utils'
+import { formatDate, formatMoney, parseMoney, todayIso, toMoneyInput } from '../utils'
 
 type Section = 'credits' | 'deposits'
 
@@ -66,9 +67,9 @@ export function CreditsPage() {
       title: item.title,
       kind: item.kind,
       creditor: item.creditor,
-      totalAmount: String(item.totalAmount),
-      remainingAmount: String(item.remainingAmount),
-      monthlyPayment: String(item.monthlyPayment),
+      totalAmount: toMoneyInput(item.totalAmount),
+      remainingAmount: toMoneyInput(item.remainingAmount),
+      monthlyPayment: toMoneyInput(item.monthlyPayment),
       startDate: item.startDate,
       endDate: item.endDate ?? '',
       comment: item.comment ?? '',
@@ -82,7 +83,7 @@ export function CreditsPage() {
     setDepositForm({
       title: item.title,
       bank: item.bank,
-      amount: String(item.amount),
+      amount: toMoneyInput(item.amount),
       rate: String(item.rate),
       startDate: item.startDate,
       endDate: item.endDate ?? '',
@@ -302,26 +303,20 @@ export function CreditsPage() {
             <div className="field-row">
               <label className="field">
                 <span>Общая сумма, ₽</span>
-                <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
+                <MoneyInput
                   value={creditForm.totalAmount}
-                  onChange={(e) =>
-                    setCreditForm({ ...creditForm, totalAmount: e.target.value })
+                  onChange={(totalAmount) =>
+                    setCreditForm({ ...creditForm, totalAmount })
                   }
                   required
                 />
               </label>
               <label className="field">
                 <span>Остаток, ₽</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
+                <MoneyInput
                   value={creditForm.remainingAmount}
-                  onChange={(e) =>
-                    setCreditForm({ ...creditForm, remainingAmount: e.target.value })
+                  onChange={(remainingAmount) =>
+                    setCreditForm({ ...creditForm, remainingAmount })
                   }
                   required
                 />
@@ -329,13 +324,10 @@ export function CreditsPage() {
             </div>
             <label className="field">
               <span>Ежемесячный платёж, ₽</span>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
+              <MoneyInput
                 value={creditForm.monthlyPayment}
-                onChange={(e) =>
-                  setCreditForm({ ...creditForm, monthlyPayment: e.target.value })
+                onChange={(monthlyPayment) =>
+                  setCreditForm({ ...creditForm, monthlyPayment })
                 }
                 required
               />
@@ -395,13 +387,10 @@ export function CreditsPage() {
             <div className="field-row">
               <label className="field">
                 <span>Сумма, ₽</span>
-                <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
+                <MoneyInput
                   value={depositForm.amount}
-                  onChange={(e) =>
-                    setDepositForm({ ...depositForm, amount: e.target.value })
+                  onChange={(amount) =>
+                    setDepositForm({ ...depositForm, amount })
                   }
                   required
                 />

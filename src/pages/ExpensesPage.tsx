@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { FundTypeFields } from '../components/FundTypeFields'
 import { Modal } from '../components/Modal'
+import { MoneyInput } from '../components/MoneyInput'
 import { PageHeader } from '../components/PageHeader'
 import { RowActions } from '../components/RowActions'
 import { useFinance } from '../FinanceContext'
 import type { Expense, FundType } from '../types'
-import { formatDate, formatMoney, fundTypeLabel, parseMoney, todayIso } from '../utils'
+import { formatDate, formatMoney, fundTypeLabel, parseMoney, todayIso, toMoneyInput } from '../utils'
 
 const emptyForm = () => ({
   date: todayIso(),
@@ -57,7 +58,7 @@ export function ExpensesPage() {
       expenseTypeId: item.expenseTypeId,
       fundType: item.fundType,
       cardId: item.cardId ?? '',
-      amount: String(item.amount),
+      amount: toMoneyInput(item.amount),
       comment: item.comment ?? '',
     })
     setOpen(true)
@@ -71,7 +72,7 @@ export function ExpensesPage() {
       expenseTypeId: item.expenseTypeId,
       fundType: item.fundType,
       cardId: item.cardId ?? '',
-      amount: String(item.amount),
+      amount: toMoneyInput(item.amount),
       comment: item.comment ?? '',
     })
     setOpen(true)
@@ -211,12 +212,9 @@ export function ExpensesPage() {
         />
         <label className="field">
           <span>Сумма, ₽</span>
-          <input
-            type="number"
-            min="0.01"
-            step="0.01"
+          <MoneyInput
             value={form.amount}
-            onChange={(e) => setForm({ ...form, amount: e.target.value })}
+            onChange={(amount) => setForm({ ...form, amount })}
             required
           />
         </label>

@@ -10,9 +10,51 @@ export function formatMoney(value: number): string {
 }
 
 export function parseMoney(raw: string | number): number {
-  const value = typeof raw === 'number' ? raw : Number(String(raw).replace(',', '.'))
+  if (typeof raw === 'number') {
+    if (!Number.isFinite(raw)) return NaN
+    return Math.round(raw * 100) / 100
+  }
+  const cleaned = String(raw)
+    .replace(/\u00a0/g, '')
+    .replace(/\s/g, '')
+    .replace(',', '.')
+  if (!cleaned || cleaned === '-' || cleaned === '.') return NaN
+  const value = Number(cleaned)
   if (!Number.isFinite(value)) return NaN
   return Math.round(value * 100) / 100
+}
+
+/** Formats amount for input: `51 910,47` */
+export function formatMoneyInput(raw: string): string {
+  const normalized = raw.replace(/\u00a0/g, ' ').replace(/\./g, ',')
+  if (!normalized.trim()) return ''
+
+  const negative = normalized.trimStart().startsWith('-')
+  const body = normalized.replace(/[^\d,]/g, '')
+  if (!body) return negative ? '-' : ''
+
+  const commaIdx = body.indexOf(',')
+  let intPart = commaIdx === -1 ? body : body.slice(0, commaIdx)
+  const fracRaw = commaIdx === -1 ? null : body.slice(commaIdx + 1).replace(/\D/g, '').slice(0, 2)
+
+  intPart = intPart.replace(/^0+(?=\d)/, '')
+  if (!intPart) intPart = '0'
+
+  const withSpaces = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  let result = withSpaces
+  if (fracRaw !== null) result += `,${fracRaw}`
+  return negative ? `-${result}` : result
+}
+
+export function toMoneyInput(value: number | string | null | undefined): string {
+  if (value === '' || value == null) return ''
+  const n = typeof value === 'number' ? value : parseMoney(value)
+  if (!Number.isFinite(n)) return ''
+  const negative = n < 0
+  const [intPart, frac = '00'] = Math.abs(n).toFixed(2).split('.')
+  const withSpaces = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  const result = frac === '00' ? withSpaces : `${withSpaces},${frac}`
+  return negative ? `-${result}` : result
 }
 
 export function formatDate(iso: string): string {

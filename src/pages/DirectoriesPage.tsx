@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Modal } from '../components/Modal'
+import { MoneyInput } from '../components/MoneyInput'
 import { PageHeader } from '../components/PageHeader'
 import { RowActions } from '../components/RowActions'
 import { useFinance } from '../FinanceContext'
@@ -10,7 +11,7 @@ import type {
   FamilyMember,
   IncomeType,
 } from '../types'
-import { formatDate, formatMoney, formatPhoneInput, parseMoney } from '../utils'
+import { formatDate, formatMoney, formatPhoneInput, parseMoney, toMoneyInput } from '../utils'
 
 type Tab = 'members' | 'incomeTypes' | 'expenseTypes' | 'cards'
 
@@ -99,7 +100,7 @@ export function DirectoriesPage() {
         last4: c.last4,
         memberId: c.memberId,
         cardKind: c.cardKind,
-        creditLimit: c.creditLimit ? String(c.creditLimit) : '',
+        creditLimit: c.creditLimit ? toMoneyInput(c.creditLimit) : '',
       })
     } else {
       setSimpleName(item.name)
@@ -450,13 +451,10 @@ export function DirectoriesPage() {
             {cardForm.cardKind === 'credit' ? (
               <label className="field">
                 <span>Кредитный лимит, ₽</span>
-                <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
+                <MoneyInput
                   value={cardForm.creditLimit}
-                  onChange={(e) =>
-                    setCardForm({ ...cardForm, creditLimit: e.target.value })
+                  onChange={(creditLimit) =>
+                    setCardForm({ ...cardForm, creditLimit })
                   }
                   required
                 />
