@@ -760,6 +760,32 @@ a {
 .table-wrap {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+.journal-table {
+  width: 100%;
+  table-layout: auto;
+}
+
+.journal-table .actions-cell {
+  position: sticky;
+  right: 0;
+  background: var(--surface);
+  box-shadow: -8px 0 12px -10px rgba(40, 44, 80, 0.25);
+  z-index: 1;
+}
+
+.journal-table thead .actions-cell,
+.journal-table th:last-child {
+  position: sticky;
+  right: 0;
+  background: var(--surface-2);
+  z-index: 2;
+}
+
+tbody tr:hover .actions-cell {
+  background: color-mix(in srgb, var(--accent) 4%, var(--surface));
 }
 
 .table-wrap.nested {
@@ -865,7 +891,7 @@ td.money-col {
 }
 
 .row-actions {
-  display: flex;
+  display: inline-flex;
   gap: 6px;
   justify-content: flex-end;
   flex-shrink: 0;
@@ -874,7 +900,16 @@ td.money-col {
 
 .actions-cell {
   width: 1%;
+  min-width: 132px;
   white-space: nowrap;
+  padding-left: 8px;
+  padding-right: 14px;
+}
+
+.fund-cell {
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .action-btn {
@@ -1706,6 +1741,23 @@ td.money-col {
     justify-content: flex-end;
     padding-top: 8px;
     gap: 8px;
+    position: static;
+    min-width: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .journal-table .actions-cell,
+  .journal-table th:last-child {
+    position: static;
+    box-shadow: none;
+  }
+
+  .fund-cell {
+    max-width: none;
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
   }
 
   .responsive-table td.actions-cell::before,

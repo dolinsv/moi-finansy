@@ -271,7 +271,7 @@ export function ExpensesPage() {
                   <td data-label="Вид расхода">
                     {typeMap[item.expenseTypeId] ?? '—'}
                   </td>
-                  <td data-label="Тип денег">
+                  <td data-label="Тип денег" className="fund-cell">
                     {fundTypeLabel(item.fundType)}
                     {item.fundType === 'card' && item.cardId
                       ? ` · ${cardMap[item.cardId] ?? ''}`

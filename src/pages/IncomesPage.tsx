@@ -271,7 +271,7 @@ export function IncomesPage() {
                   <td data-label="Вид дохода">
                     {typeMap[item.incomeTypeId] ?? '—'}
                   </td>
-                  <td data-label="Тип денег">
+                  <td data-label="Тип денег" className="fund-cell">
                     {fundTypeLabel(item.fundType)}
                     {item.fundType === 'card' && item.cardId
                       ? ` · ${cardMap[item.cardId] ?? ''}`
