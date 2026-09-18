@@ -251,7 +251,10 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     (loginName: string, password: string) => {
       const normalized = loginName.trim().toLowerCase()
       const member = data.members.find(
-        (m) => m.login.toLowerCase() === normalized && m.password === password,
+        (m) =>
+          Boolean(m.login) &&
+          m.login.toLowerCase() === normalized &&
+          m.password === password,
       )
       if (!member) return 'Неверный логин или пароль'
       setSessionId(member.id)

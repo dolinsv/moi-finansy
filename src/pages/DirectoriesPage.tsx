@@ -113,11 +113,16 @@ export function DirectoriesPage() {
       const name = memberForm.name.trim()
       const login = memberForm.login.trim().toLowerCase()
       const password = memberForm.password
-      if (!name || !login || !password) return
-      const duplicate = data.members.some(
-        (m) => m.login.toLowerCase() === login && m.id !== editingId,
-      )
-      if (duplicate) return
+      if (!name) return
+      if (login) {
+        const duplicate = data.members.some(
+          (m) =>
+            m.login &&
+            m.login.toLowerCase() === login &&
+            m.id !== editingId,
+        )
+        if (duplicate) return
+      }
       const payload = {
         name,
         birthDate: memberForm.birthDate,
@@ -220,7 +225,7 @@ export function DirectoriesPage() {
                     <td data-label="Имя">
                       <strong>{item.name}</strong>
                     </td>
-                    <td data-label="Логин">{item.login}</td>
+                    <td data-label="Логин">{item.login || '—'}</td>
                     <td data-label="Дата рождения">
                       {item.birthDate ? formatDate(item.birthDate) : '—'}
                     </td>
@@ -367,7 +372,7 @@ export function DirectoriesPage() {
                 onChange={(e) =>
                   setMemberForm({ ...memberForm, login: e.target.value })
                 }
-                required
+                placeholder="Необязательно"
               />
             </label>
             <label className="field">
@@ -379,7 +384,7 @@ export function DirectoriesPage() {
                 onChange={(e) =>
                   setMemberForm({ ...memberForm, password: e.target.value })
                 }
-                required
+                placeholder="Необязательно"
               />
             </label>
           </>

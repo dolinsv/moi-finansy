@@ -137,10 +137,10 @@ export function createSeedData(): AppData {
 
 function normalize(raw: Partial<AppData>): AppData {
   const seed = createSeedData()
-  const members = (raw.members ?? seed.members).map((m, index) => {
+  const members = (raw.members ?? seed.members).map((m) => {
     const member = m as FamilyMember
     let name = member.name
-    let login = member.login || ''
+    let login = (member.login || '').trim()
     if (name === 'Анна') name = 'Надежда'
     if (
       login.toLowerCase() === 'anna' ||
@@ -148,20 +148,13 @@ function normalize(raw: Partial<AppData>): AppData {
     ) {
       login = 'nadezhda'
     }
-    const fallbackLogin =
-      login ||
-      name
-        .toLowerCase()
-        .replace(/\s+/g, '')
-        .replace(/[^a-zа-яё0-9]/gi, '') ||
-      `user${index + 1}`
     return {
       id: member.id,
       name,
       birthDate: member.birthDate || '',
       phone: member.phone || '',
-      login: fallbackLogin,
-      password: member.password || '1234',
+      login,
+      password: member.password ?? '',
     }
   })
   const fallbackMemberId = members[0]?.id ?? ''
