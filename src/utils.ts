@@ -4,8 +4,15 @@ export function formatMoney(value: number): string {
   return new Intl.NumberFormat('ru-RU', {
     style: 'currency',
     currency: 'RUB',
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(value)
+}
+
+export function parseMoney(raw: string | number): number {
+  const value = typeof raw === 'number' ? raw : Number(String(raw).replace(',', '.'))
+  if (!Number.isFinite(value)) return NaN
+  return Math.round(value * 100) / 100
 }
 
 export function formatDate(iso: string): string {

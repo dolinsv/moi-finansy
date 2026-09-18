@@ -10,7 +10,7 @@ import type {
   FamilyMember,
   IncomeType,
 } from '../types'
-import { formatDate, formatMoney, formatPhoneInput } from '../utils'
+import { formatDate, formatMoney, formatPhoneInput, parseMoney } from '../utils'
 
 type Tab = 'members' | 'incomeTypes' | 'expenseTypes' | 'cards'
 
@@ -141,7 +141,7 @@ export function DirectoriesPage() {
       const digits = cardForm.last4.replace(/\D/g, '').slice(-4)
       if (!name || digits.length !== 4 || !cardForm.memberId) return
       if (cardForm.cardKind === 'credit') {
-        const limit = Number(cardForm.creditLimit)
+        const limit = parseMoney(cardForm.creditLimit)
         if (!limit || limit <= 0) return
       }
       const payload: Omit<BankCard, 'id'> = {
@@ -151,7 +151,7 @@ export function DirectoriesPage() {
         cardKind: cardForm.cardKind,
         creditLimit:
           cardForm.cardKind === 'credit'
-            ? Number(cardForm.creditLimit)
+            ? parseMoney(cardForm.creditLimit)
             : undefined,
       }
       if (editingId) updateCard({ id: editingId, ...payload })
@@ -452,7 +452,8 @@ export function DirectoriesPage() {
                 <span>Кредитный лимит, ₽</span>
                 <input
                   type="number"
-                  min="1"
+                  min="0.01"
+                  step="0.01"
                   value={cardForm.creditLimit}
                   onChange={(e) =>
                     setCardForm({ ...cardForm, creditLimit: e.target.value })

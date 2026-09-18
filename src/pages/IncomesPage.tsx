@@ -5,7 +5,7 @@ import { PageHeader } from '../components/PageHeader'
 import { RowActions } from '../components/RowActions'
 import { useFinance } from '../FinanceContext'
 import type { FundType, Income } from '../types'
-import { formatDate, formatMoney, fundTypeLabel, todayIso } from '../utils'
+import { formatDate, formatMoney, fundTypeLabel, parseMoney, todayIso } from '../utils'
 
 const emptyForm = () => ({
   date: todayIso(),
@@ -78,7 +78,7 @@ export function IncomesPage() {
   }
 
   const save = () => {
-    const amount = Number(form.amount)
+    const amount = parseMoney(form.amount)
     if (!amount || amount <= 0) return
     if (form.fundType === 'card' && !form.cardId) return
 
@@ -213,8 +213,8 @@ export function IncomesPage() {
           <span>Сумма, ₽</span>
           <input
             type="number"
-            min="1"
-            step="1"
+            min="0.01"
+            step="0.01"
             value={form.amount}
             onChange={(e) => setForm({ ...form, amount: e.target.value })}
             required

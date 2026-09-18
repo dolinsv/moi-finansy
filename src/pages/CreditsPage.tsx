@@ -4,7 +4,7 @@ import { PageHeader } from '../components/PageHeader'
 import { RowActions } from '../components/RowActions'
 import { useFinance } from '../FinanceContext'
 import type { Credit, CreditKind, Deposit } from '../types'
-import { formatDate, formatMoney, todayIso } from '../utils'
+import { formatDate, formatMoney, parseMoney, todayIso } from '../utils'
 
 type Section = 'credits' | 'deposits'
 
@@ -97,9 +97,9 @@ export function CreditsPage() {
         title: creditForm.title.trim(),
         kind: creditForm.kind,
         creditor: creditForm.creditor.trim(),
-        totalAmount: Number(creditForm.totalAmount),
-        remainingAmount: Number(creditForm.remainingAmount),
-        monthlyPayment: Number(creditForm.monthlyPayment),
+        totalAmount: parseMoney(creditForm.totalAmount),
+        remainingAmount: parseMoney(creditForm.remainingAmount),
+        monthlyPayment: parseMoney(creditForm.monthlyPayment),
         startDate: creditForm.startDate,
         endDate: creditForm.endDate || undefined,
         comment: creditForm.comment.trim() || undefined,
@@ -111,7 +111,7 @@ export function CreditsPage() {
       const payload = {
         title: depositForm.title.trim(),
         bank: depositForm.bank.trim(),
-        amount: Number(depositForm.amount),
+        amount: parseMoney(depositForm.amount),
         rate: Number(depositForm.rate),
         startDate: depositForm.startDate,
         endDate: depositForm.endDate || undefined,
@@ -304,7 +304,8 @@ export function CreditsPage() {
                 <span>Общая сумма, ₽</span>
                 <input
                   type="number"
-                  min="1"
+                  min="0.01"
+                  step="0.01"
                   value={creditForm.totalAmount}
                   onChange={(e) =>
                     setCreditForm({ ...creditForm, totalAmount: e.target.value })
@@ -317,6 +318,7 @@ export function CreditsPage() {
                 <input
                   type="number"
                   min="0"
+                  step="0.01"
                   value={creditForm.remainingAmount}
                   onChange={(e) =>
                     setCreditForm({ ...creditForm, remainingAmount: e.target.value })
@@ -330,6 +332,7 @@ export function CreditsPage() {
               <input
                 type="number"
                 min="0"
+                step="0.01"
                 value={creditForm.monthlyPayment}
                 onChange={(e) =>
                   setCreditForm({ ...creditForm, monthlyPayment: e.target.value })
@@ -394,7 +397,8 @@ export function CreditsPage() {
                 <span>Сумма, ₽</span>
                 <input
                   type="number"
-                  min="1"
+                  min="0.01"
+                  step="0.01"
                   value={depositForm.amount}
                   onChange={(e) =>
                     setDepositForm({ ...depositForm, amount: e.target.value })
