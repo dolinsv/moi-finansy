@@ -131,7 +131,7 @@ export function HomePage() {
         </div>
 
         <div className={`saved-box ${balance >= 0 ? 'positive' : 'negative'}`}>
-          <span>{balance >= 0 ? 'Отложено за месяц' : 'Минус за месяц'}</span>
+          <span>{balance >= 0 ? 'Получено за месяц' : 'Минус за месяц'}</span>
           <strong>{formatMoney(Math.abs(balance))}</strong>
         </div>
 
