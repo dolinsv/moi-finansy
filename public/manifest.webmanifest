@@ -7,8 +7,8 @@
   "display": "standalone",
   "orientation": "portrait-primary",
   "display_override": ["standalone", "browser"],
-  "background_color": "#6a63e8",
-  "theme_color": "#6a63e8",
+  "background_color": "#12131c",
+  "theme_color": "#12131c",
   "lang": "ru",
   "icons": [
     {

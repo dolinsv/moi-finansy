@@ -34,6 +34,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem(THEME_KEY, theme)
+
+    const themeColor = theme === 'dark' ? '#12131c' : '#f4f5f9'
+    let meta = document.querySelector('meta[name="theme-color"]')
+    if (!meta) {
+      meta = document.createElement('meta')
+      meta.setAttribute('name', 'theme-color')
+      document.head.appendChild(meta)
+    }
+    meta.setAttribute('content', themeColor)
+
+    let status = document.querySelector(
+      'meta[name="apple-mobile-web-app-status-bar-style"]',
+    )
+    if (!status) {
+      status = document.createElement('meta')
+      status.setAttribute('name', 'apple-mobile-web-app-status-bar-style')
+      document.head.appendChild(status)
+    }
+    status.setAttribute('content', 'black-translucent')
   }, [theme])
 
   const setTheme = useCallback((next: Theme) => setThemeState(next), [])

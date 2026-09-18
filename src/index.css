@@ -1433,8 +1433,7 @@ tbody tr:last-child td {
     z-index: 40;
     padding: 8px 10px;
     padding-top: calc(8px + env(safe-area-inset-top, 0px));
-    background: color-mix(in srgb, var(--surface) 94%, transparent);
-    backdrop-filter: blur(14px);
+    background: var(--surface);
     border-bottom: 1px solid var(--line-soft);
   }
 
