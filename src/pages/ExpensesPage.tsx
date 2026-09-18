@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import { FundTypeFields } from '../components/FundTypeFields'
 import { Modal } from '../components/Modal'
 import { MoneyInput } from '../components/MoneyInput'
-import { SelectSheet } from '../components/SelectSheet'
+import { PageHeader } from '../components/PageHeader'
 import { RowActions } from '../components/RowActions'
+import { SelectSheet } from '../components/SelectSheet'
 import {
   compareValues,
   SortableTh,
