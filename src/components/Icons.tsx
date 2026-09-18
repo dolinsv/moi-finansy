@@ -157,3 +157,19 @@ export function CloseIcon({ size = 16 }: IconProps) {
     </svg>
   )
 }
+
+export function ChevronLeftIcon({ size = 18 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
+      <path {...stroke} d="M14.5 6.5 9 12l5.5 5.5" />
+    </svg>
+  )
+}
+
+export function ChevronRightIcon({ size = 18 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
+      <path {...stroke} d="M9.5 6.5 15 12l-5.5 5.5" />
+    </svg>
+  )
+}

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CreditIcon, DirectoryIcon, ExpenseIcon, IncomeIcon, ReportIcon } from '../components/Icons'
+import { CreditIcon, DirectoryIcon, ExpenseIcon, IncomeIcon, ReportIcon, ChevronLeftIcon, ChevronRightIcon } from '../components/Icons'
 import { useFinance } from '../FinanceContext'
 import {
   dayOfMonth,
@@ -61,23 +61,37 @@ export function HomePage() {
         <p className={`balance-value ${balance >= 0 ? 'up' : 'down'}`}>
           {formatMoney(balance)}
         </p>
-        <div className="month-switcher">
+        <div className="month-switcher" role="group" aria-label="Выбор месяца">
           <button
             type="button"
             className="month-nav"
             onClick={() => setMonthCursor((prev) => shiftMonth(prev, -1))}
             aria-label="Предыдущий месяц"
           >
-            ‹
+            <ChevronLeftIcon />
           </button>
-          <p className="balance-sub">Семейный учёт · {label}</p>
+          <div className="month-switcher-center">
+            <span className="month-switcher-caption">Семейный учёт</span>
+            <strong className="month-switcher-value">{label}</strong>
+            {!currentMonth ? (
+              <button
+                type="button"
+                className="month-today"
+                onClick={() =>
+                  setMonthCursor(new Date(now.getFullYear(), now.getMonth(), 1))
+                }
+              >
+                К текущему
+              </button>
+            ) : null}
+          </div>
           <button
             type="button"
             className="month-nav"
             onClick={() => setMonthCursor((prev) => shiftMonth(prev, 1))}
             aria-label="Следующий месяц"
           >
-            ›
+            <ChevronRightIcon />
           </button>
         </div>
       </section>
