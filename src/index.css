@@ -314,7 +314,8 @@ a {
 }
 
 .page {
-  max-width: 1040px;
+  width: 100%;
+  max-width: none;
 }
 
 .page-header {
@@ -2173,5 +2174,30 @@ td.money-col {
 
   .home-page {
     padding-bottom: 24px;
+  }
+
+  .fund-cell {
+    max-width: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .main {
+    padding: 28px 36px 40px;
+  }
+
+  .journal-filters .field,
+  .journal-filters .select-sheet-field {
+    flex: 0 1 260px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .main {
+    padding: 32px 48px 48px;
+  }
+
+  .home-page {
+    max-width: 1280px;
   }
 }
