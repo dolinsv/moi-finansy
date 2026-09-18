@@ -16,6 +16,10 @@ dist-ssr
 !.env.example
 !.env.production
 
+# Secrets / local notes
+supabase/*.txt
+supabase/**/*.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
