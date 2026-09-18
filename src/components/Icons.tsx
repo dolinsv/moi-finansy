@@ -115,6 +115,15 @@ export function EditIcon({ size = 17 }: IconProps) {
   )
 }
 
+export function CopyIcon({ size = 17 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
+      <rect {...stroke} x="8.5" y="8.5" width="11" height="11" rx="2" />
+      <path {...stroke} d="M15.5 8.5V6.8A2.3 2.3 0 0 0 13.2 4.5H6.8A2.3 2.3 0 0 0 4.5 6.8v6.4A2.3 2.3 0 0 0 6.8 15.5H8.5" />
+    </svg>
+  )
+}
+
 export function TrashIcon({ size = 17 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>

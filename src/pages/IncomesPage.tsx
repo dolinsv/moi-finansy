@@ -63,6 +63,20 @@ export function IncomesPage() {
     setOpen(true)
   }
 
+  const openCopy = (item: Income) => {
+    setEditing(null)
+    setForm({
+      date: todayIso(),
+      memberId: item.memberId,
+      incomeTypeId: item.incomeTypeId,
+      fundType: item.fundType,
+      cardId: item.cardId ?? '',
+      amount: String(item.amount),
+      comment: item.comment ?? '',
+    })
+    setOpen(true)
+  }
+
   const save = () => {
     const amount = Number(form.amount)
     if (!amount || amount <= 0) return
@@ -132,6 +146,7 @@ export function IncomesPage() {
                   <td className="actions-cell">
                     <RowActions
                       onEdit={() => openEdit(item)}
+                      onCopy={() => openCopy(item)}
                       onDelete={() => removeIncome(item.id)}
                     />
                   </td>

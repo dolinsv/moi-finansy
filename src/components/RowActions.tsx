@@ -1,11 +1,12 @@
-import { EditIcon, TrashIcon } from './Icons'
+import { CopyIcon, EditIcon, TrashIcon } from './Icons'
 
 interface RowActionsProps {
   onEdit: () => void
   onDelete: () => void
+  onCopy?: () => void
 }
 
-export function RowActions({ onEdit, onDelete }: RowActionsProps) {
+export function RowActions({ onEdit, onDelete, onCopy }: RowActionsProps) {
   return (
     <div className="row-actions">
       <button
@@ -17,6 +18,17 @@ export function RowActions({ onEdit, onDelete }: RowActionsProps) {
       >
         <EditIcon />
       </button>
+      {onCopy ? (
+        <button
+          type="button"
+          className="action-btn"
+          onClick={onCopy}
+          aria-label="Копировать"
+          title="Копировать"
+        >
+          <CopyIcon />
+        </button>
+      ) : null}
       <button
         type="button"
         className="action-btn danger"
